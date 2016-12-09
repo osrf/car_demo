@@ -18,9 +18,6 @@
 #ifndef PRIUSCUP_PLUGINS_PRIUSHYBRIDPLUGIN_HH_
 #define PRIUSCUP_PLUGINS_PRIUSHYBRIDPLUGIN_HH_
 
-#include <string>
-#include <thread>
-
 #include <ignition/math/Vector3.hh>
 
 #include <gazebo/physics/physics.hh>
@@ -33,6 +30,7 @@ namespace gazebo
   // Forward declaration
   class PriusHybridPluginPrivate;
 
+  /// \brief A model plugin for prius hybrid
   class PriusHybridPlugin : public ModelPlugin
   {
     /// \brief Constructor.
@@ -48,15 +46,18 @@ namespace gazebo
     /// \param[in] _msg Keypress message.
     private: void OnKeyPress(ConstAnyPtr &_msg);
 
+    /// \brief Update on every time step
     private: void Update();
 
+    /// \brief Update steering wheel to front left/right wheel ratio
     private: void UpdateHandWheelRatio();
 
+    /// \brief Get the radius of a collision
     private: double CollisionRadius(physics::CollisionPtr _collision);
 
-    private: ignition::math::Vector3d CollisionPosition(physics::LinkPtr _link,
-        const unsigned int _id);
-
+    /// \brief Get the multiplier that is determined based on the direction
+    /// state of the vehicle.
+    /// \return 1.0 if FORWARD, -1.0 if REVERSE, 0.0 otherwise
     private: double GasTorqueMultiplier();
 
     /// \brief Private data

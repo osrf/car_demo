@@ -19,6 +19,7 @@
 
 #include "PriusHybridPlugin.hh"
 #include <gazebo/common/PID.hh>
+#include <gazebo/common/Time.hh>
 
 namespace gazebo
 {
@@ -35,86 +36,175 @@ namespace gazebo
               FORWARD = 1
             };
 
+    /// \brief Pointer to the world
     public: physics::WorldPtr world;
+
+    /// \brief Pointer to the parent model
     public: physics::ModelPtr model;
 
     /// \brief Transport node
     public: transport::NodePtr node;
 
+    /// \brief Physics update event connection
     public: event::ConnectionPtr updateConnection;
 
+    /// brief Front left wheel joint
     public: physics::JointPtr flWheelJoint;
+
+    /// brief Front right wheel joint
     public: physics::JointPtr frWheelJoint;
+
+    /// brief Rear left wheel joint
     public: physics::JointPtr blWheelJoint;
+
+    /// brief Rear right wheel joint
     public: physics::JointPtr brWheelJoint;
+
+    /// \brief Front left wheel steering joint
     public: physics::JointPtr flWheelSteeringJoint;
+
+    /// \brief Front right wheel steering joint
     public: physics::JointPtr frWheelSteeringJoint;
+
+    /// \brief Steering wheel joint
     public: physics::JointPtr handWheelJoint;
 
-
+    /// \brief PID control for the front left wheel steering joint
     public: common::PID flWheelSteeringPID;
+
+    /// \brief PID control for the front right wheel steering joint
     public: common::PID frWheelSteeringPID;
+
+    /// \brief PID control for steering wheel joint
     public: common::PID handWheelPID;
 
+    /// \brief Last sim time received
     public: common::Time lastSimTime;
+
+    /// \brief Last sim time when a gas command is received
     public: common::Time lastGasCmdTime;
+
+    /// \brief Last sim time when a steering command is received
     public: common::Time lastSteeringCmdTime;
 
+    /// \brief Current direction of the vehicle: FORWARD, NEUTRAL, REVERSE.
     public: DirectionType directionState;
 
+    /// \brief Minimum brake percentage
     public: double minBrakePercent = 0;
+
+    /// \brief Max torque that can be applied to the front wheels
     public: double frontTorque = 0;
+
+    /// \brief Max torque that can be applied to the back wheels
     public: double backTorque = 0;
 
+    /// \brief Max speed (m/s) of the car
     public: double maxSpeed = 0;
+
+    /// \brief Max steering angle
     public: double maxSteer = 0;
+
+    /// \brief Max torque that can be applied to the front brakes
     public: double frontBrakeTorque = 0;
+
+    /// \brief Max torque that can be applied to the rear brakes
     public: double backBrakeTorque = 0;
 
+    /// \brief Angle ratio between the steering wheel and the front wheels
     public: double steeringRatio = 0;
+
+    /// \brief Max range of hand steering wheel
     public: double handWheelHigh = 0;
+
+    /// \brief Min range of hand steering wheel
     public: double handWheelLow = 0;
-    public: double handWheelRange = 0;
 
-    public: double tireAngleRange = 0;
-
+    /// \brief Max force that can be applied to hand steering wheel
     public: double handWheelForce = 0;
 
-    /// PID gains
-    public: double fLwheelSteeringPgain = 0;
-    public: double fRwheelSteeringPgain = 0;
-    public: double fLwheelSteeringIgain = 0;
-    public: double fRwheelSteeringIgain = 0;
-    public: double fLwheelSteeringDgain = 0;
-    public: double fRwheelSteeringDgain = 0;
-
-    public: double frWheelSteeringCmd = 0;
-    public: double flWheelSteeringCmd = 0;
-    public: double handWheelCmd = 0;
-
-    public: double flWheelRadius = 0;
-    public: double frWheelRadius = 0;
-    public: double blWheelRadius = 0;
-    public: double brWheelRadius = 0;
-    public: double wheelbaseLength = 0;
-    public: double frontTrackWidth = 0;
-    public: double backTrackWidth = 0;
-
+    /// \brief Max force that can be applied to wheel steering joints
     public: double steeredWheelForce= 0;
 
+    /// \brief Front left wheel steering joint P gain
+    public: double fLwheelSteeringPgain = 0;
+
+    /// \brief Front right wheel steering joint P gain
+    public: double fRwheelSteeringPgain = 0;
+
+    /// \brief Front left wheel steering joint I gain
+    public: double fLwheelSteeringIgain = 0;
+
+    /// \brief Front right wheel steering joint I gain
+    public: double fRwheelSteeringIgain = 0;
+
+    /// \brief Front left wheel steering joint D gain
+    public: double fLwheelSteeringDgain = 0;
+
+    /// \brief Front right wheel steering joint D gain
+    public: double fRwheelSteeringDgain = 0;
+
+    /// \brief Front left wheel steering command
+    public: double flWheelSteeringCmd = 0;
+
+    /// \brief Front right wheel steering command
+    public: double frWheelSteeringCmd = 0;
+
+    /// \brief Steering wheel command
+    public: double handWheelCmd = 0;
+
+    /// \brief Front left wheel radius
+    public: double flWheelRadius = 0;
+
+    /// \brief Front right wheel radius
+    public: double frWheelRadius = 0;
+
+    /// \brief Rear left wheel radius
+    public: double blWheelRadius = 0;
+
+    /// \brief Rear right wheel radius
+    public: double brWheelRadius = 0;
+
+    /// \brief Distance distance between front and rear axles
+    public: double wheelbaseLength = 0;
+
+    /// \brief Distance distance between front left and right wheels
+    public: double frontTrackWidth = 0;
+
+    /// \brief Distance distance between rear left and right wheels
+    public: double backTrackWidth = 0;
+
+    /// \brief Gas pedal position in percentage. 1.0 = Fully accelerated.
     public: double gasPedalPercent = 0;
+
+    /// \brief Brake pedal position in percentage. 1.0 =
     public: double brakePedalPercent = 0;
 
-
+    /// \brief Angle state of hand steering wheel joint
     public: double handWheelState = 0;
+
+    /// \brief Angle state of front left wheel steering joint
     public: double flSteeringState = 0;
+
+    /// \brief Angle state of front right wheel steering joint
     public: double frSteeringState = 0;
+
+    /// \brief Angle state of front left wheel joint
     public: double flWheelState = 0;
+
+    /// \brief Angle state of front right wheel joint
     public: double frWheelState = 0;
+
+    /// \brief Angle state of rear left wheel joint
     public: double blWheelState = 0;
+
+    /// \brief Angle state of rear right wheel joint
     public: double brWheelState = 0;
 
+    /// \brief Subscriber to the keyboard topic
     public: transport::SubscriberPtr keyboardSub;
+
+    /// \brief Mutex to protect updates
     public: std::mutex mutex;
   };
 }
@@ -337,14 +427,18 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // Compute wheelbase, frontTrackWidth, and rearTrackWidth
   //  first compute the positions of the 4 wheel centers
   //  again assumes wheel link is child of joint and has only one collision
-  ignition::math::Vector3d flCenterPos = this->CollisionPosition(
-      this->dataPtr->flWheelJoint->GetChild(), id);
-  ignition::math::Vector3d frCenterPos = this->CollisionPosition(
-      this->dataPtr->frWheelJoint->GetChild(), id);
-  ignition::math::Vector3d blCenterPos = this->CollisionPosition(
-      this->dataPtr->blWheelJoint->GetChild(), id);
-  ignition::math::Vector3d brCenterPos = this->CollisionPosition(
-      this->dataPtr->brWheelJoint->GetChild(), id);
+  ignition::math::Vector3d flCenterPos =
+      this->dataPtr->flWheelJoint->GetChild()->GetCollision(id)
+      ->GetWorldPose().pos.Ign();
+  ignition::math::Vector3d frCenterPos =
+      this->dataPtr->frWheelJoint->GetChild()->GetCollision(id)
+      ->GetWorldPose().pos.Ign();
+  ignition::math::Vector3d blCenterPos =
+      this->dataPtr->blWheelJoint->GetChild()->GetCollision(id)
+      ->GetWorldPose().pos.Ign();
+  ignition::math::Vector3d brCenterPos =
+      this->dataPtr->brWheelJoint->GetChild()->GetCollision(id)
+      ->GetWorldPose().pos.Ign();
 
   // track widths are computed first
   ignition::math::Vector3d vec3 = flCenterPos - frCenterPos;
@@ -511,12 +605,11 @@ void PriusHybridPlugin::Update()
   // Gas pedal torque.
   // Map gas torques to individual wheels.
   // Cut off gas torque at a given wheel if max speed is exceeded.
-  // Use directionState to determine direction of applied torque.
+  // Use directionState to determine direction of that can be applied torque.
   // Note that definition of DirectionType allows multiplication to determine
   // torque direction.
   // double gasPercent = this->GasPedalPercent();
   double gasPercent = this->dataPtr->gasPedalPercent;
-
   double gasMultiplier = this->GasTorqueMultiplier();
   double flGasTorque = 0, frGasTorque = 0, blGasTorque = 0, brGasTorque = 0;
   // Apply equal torque at left and right wheels, which is an implicit model
@@ -549,7 +642,7 @@ void PriusHybridPlugin::Update()
   // Map brake torques to individual wheels.
   // Apply brake torque in opposition to wheel spin direction.
   double flBrakeTorque, frBrakeTorque, blBrakeTorque, brBrakeTorque;
-  // Below the smoothing speed in rad/s, reduce applied brake torque
+  // Below the smoothing speed in rad/s, reduce that can be applied brake torque
   double smoothingSpeed = 0.5;
   flBrakeTorque = -brakePercent*this->dataPtr->frontBrakeTorque *
       ignition::math::clamp(
@@ -564,7 +657,7 @@ void PriusHybridPlugin::Update()
       ignition::math::clamp(
       this->dataPtr->brWheelState / smoothingSpeed, -1.0, 1.0);
 
-  // Lock wheels if high braking applied at low speed
+  // Lock wheels if high braking that can be applied at low speed
   if (brakePercent > 0.7 && fabs(this->dataPtr->flWheelState) < smoothingSpeed)
     this->dataPtr->flWheelJoint->SetParam("stop_cfm", 0, 0.0);
   else
@@ -613,7 +706,7 @@ void PriusHybridPlugin::UpdateHandWheelRatio()
       this->dataPtr->handWheelJoint->GetHighStop(0).Radian();
   this->dataPtr->handWheelLow =
       this->dataPtr->handWheelJoint->GetLowStop(0).Radian();
-  this->dataPtr->handWheelRange =
+  double handWheelRange =
       this->dataPtr->handWheelHigh - this->dataPtr->handWheelLow;
   double high = std::min(
       this->dataPtr->flWheelSteeringJoint->GetHighStop(0).Radian(),
@@ -623,11 +716,10 @@ void PriusHybridPlugin::UpdateHandWheelRatio()
       this->dataPtr->flWheelSteeringJoint->GetLowStop(0).Radian(),
       this->dataPtr->frWheelSteeringJoint->GetLowStop(0).Radian());
   low = std::max(low, -this->dataPtr->maxSteer);
-  this->dataPtr->tireAngleRange = high - low;
+  double tireAngleRange = high - low;
 
   // Compute the angle ratio between the steering wheel and the tires
-  this->dataPtr->steeringRatio =
-      this->dataPtr->tireAngleRange / this->dataPtr->handWheelRange;
+  this->dataPtr->steeringRatio = tireAngleRange / handWheelRange;
 }
 
 /////////////////////////////////////////////////
@@ -651,23 +743,6 @@ double PriusHybridPlugin::CollisionRadius(physics::CollisionPtr _coll)
   }
   return 0;
 }
-
-/////////////////////////////////////////////////
-// function that extracts the position of the collision object specified by _id
-ignition::math::Vector3d PriusHybridPlugin::CollisionPosition(
-    physics::LinkPtr _link, const unsigned int _id)
-{
-  if (!_link || !(_link->GetCollision(_id)))
-    return ignition::math::Vector3d::Zero;
-  ignition::math::Pose3d pose = _link->GetCollision(_id)->GetWorldPose().Ign();
-  return pose.Pos();
-}
-
-/*/////////////////////////////////////////////////
-double PriusHybridPlugin::GasPedalPercent
-{
-  return this->dataPtr->gasPedalPercent;
-}*/
 
 /////////////////////////////////////////////////
 double PriusHybridPlugin::GasTorqueMultiplier()
