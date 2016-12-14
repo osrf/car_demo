@@ -498,14 +498,14 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
       this->dataPtr->gasPedalPercent =
           std::min(this->dataPtr->gasPedalPercent, 1.0);
       this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
-      this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
+      this->dataPtr->lastGasCmdTime = this->dataPtr->world->GetSimTime();
       break;
     }
     // a - steer left
     case 97:
     {
       this->dataPtr->handWheelCmd = this->dataPtr->handWheelState + 0.1;
-      this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
+      this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->GetSimTime();
       break;
     }
     // s - reverse
@@ -517,14 +517,14 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
       this->dataPtr->gasPedalPercent =
           std::min(this->dataPtr->gasPedalPercent, 1.0);
       this->dataPtr->directionState = PriusHybridPluginPrivate::REVERSE;
-      this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
+      this->dataPtr->lastGasCmdTime = this->dataPtr->world->GetSimTime();
       break;
     }
     // d - steer right
     case 100:
     {
       this->dataPtr->handWheelCmd = this->dataPtr->handWheelState - 0.1;
-      this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
+      this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->GetSimTime();
       break;
     }
     // e brake
@@ -545,7 +545,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
 void PriusHybridPlugin::Update()
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  common::Time curTime = this->dataPtr->world->SimTime();
+  common::Time curTime = this->dataPtr->world->GetSimTime();
   double dt = (curTime - this->dataPtr->lastSimTime).Double();
   if (dt < 0)
   {
