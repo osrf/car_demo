@@ -5,7 +5,7 @@
     <gui fullscreen='0'>
       <plugin name='keyboard' filename='libKeyboardGUIPlugin.so'/>
       <camera name="user_camera">
-        <pose>-3.04 -56 16.24 0 0.48 2.72</pose>
+        <pose>89.90 -309.03 10.39 0 0.24 1.63</pose>
       </camera>
 
     </gui>
@@ -25,7 +25,7 @@
     </include>
 
     <model name="prius_hybrid">
-      <pose>-28.14 -44.24 0.24 0 0 -1.91</pose>
+      <pose>89.90 -282.78 0.24 0 0 3.14</pose>
       <include>
         <uri>model://prius_hybrid</uri>
       </include>
