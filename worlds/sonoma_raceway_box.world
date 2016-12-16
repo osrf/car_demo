@@ -30,6 +30,43 @@
         <uri>model://prius_hybrid</uri>
       </include>
 
+      <link name="camera_link">
+        <pose>0.30 -0.18 1.3 0 0 -1.5707</pose>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.01 0.01 0.01</size>
+            </box>
+          </geometry>
+        </visual>
+        <sensor name="camera" type="wideanglecamera">
+          <camera>
+            <horizontal_fov>2.09</horizontal_fov>
+            <image>
+              <width>1280</width>
+              <height>960</height>
+            </image>
+            <clip>
+              <near>0.01</near>
+              <far>100</far>
+            </clip>
+            <lens>
+              <type>stereographic</type>
+              <scale_to_hfov>true</scale_to_hfov>
+              <cutoff_angle>2.09</cutoff_angle>
+              <env_texture_size>1024</env_texture_size>
+            </lens>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>false</visualize>
+        </sensor>
+      </link>
+      <joint name="camera_joint" type="fixed">
+        <parent>prius_hybrid::chassis</parent>
+        <child>camera_link</child>
+      </joint>
+
       <plugin name='priusHybrid' filename='libPriusHybridPlugin.so'>
         <front_left_wheel>prius_hybrid::front_left_wheel_joint</front_left_wheel>
         <front_right_wheel>prius_hybrid::front_right_wheel_joint</front_right_wheel>
