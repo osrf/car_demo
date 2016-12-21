@@ -16,6 +16,7 @@
 */
 
 #include <mutex>
+#include <ignition/transport/Node.hh>
 
 #include "PriusHybridPlugin.hh"
 #include <gazebo/common/PID.hh>
@@ -43,7 +44,10 @@ namespace gazebo
     public: physics::ModelPtr model;
 
     /// \brief Transport node
-    public: transport::NodePtr node;
+    public: transport::NodePtr gznode;
+
+    /// \brief Ignition transport node
+    public: ignition::transport::Node node;
 
     /// \brief Physics update event connection
     public: event::ConnectionPtr updateConnection;
@@ -236,13 +240,15 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->model = _model;
   this->dataPtr->world = this->dataPtr->model->GetWorld();
 
-  this->dataPtr->node = transport::NodePtr(new transport::Node());
-  this->dataPtr->node->Init();
+  this->dataPtr->gznode = transport::NodePtr(new transport::Node());
+  this->dataPtr->gznode->Init();
+
+  this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
 
   std::string handWheelJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("steering_wheel");
   this->dataPtr->handWheelJoint =
-      this->dataPtr->model->GetJoint(handWheelJointName);
+    this->dataPtr->model->GetJoint(handWheelJointName);
   if (!this->dataPtr->handWheelJoint)
   {
     std::cerr << "could not find steering wheel joint" <<std::endl;
@@ -252,7 +258,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   std::string flWheelJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("front_left_wheel");
   this->dataPtr->flWheelJoint =
-      this->dataPtr->model->GetJoint(flWheelJointName);
+    this->dataPtr->model->GetJoint(flWheelJointName);
   if (!this->dataPtr->flWheelJoint)
   {
     std::cerr << "could not find front left wheel joint" <<std::endl;
@@ -262,7 +268,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   std::string frWheelJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("front_right_wheel");
   this->dataPtr->frWheelJoint =
-      this->dataPtr->model->GetJoint(frWheelJointName);
+    this->dataPtr->model->GetJoint(frWheelJointName);
   if (!this->dataPtr->frWheelJoint)
   {
     std::cerr << "could not find front right wheel joint" <<std::endl;
@@ -272,7 +278,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   std::string blWheelJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("back_left_wheel");
   this->dataPtr->blWheelJoint =
-      this->dataPtr->model->GetJoint(blWheelJointName);
+    this->dataPtr->model->GetJoint(blWheelJointName);
   if (!this->dataPtr->blWheelJoint)
   {
     std::cerr << "could not find back left wheel joint" <<std::endl;
@@ -282,7 +288,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   std::string brWheelJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("back_right_wheel");
   this->dataPtr->brWheelJoint =
-      this->dataPtr->model->GetJoint(brWheelJointName);
+    this->dataPtr->model->GetJoint(brWheelJointName);
   if (!this->dataPtr->brWheelJoint)
   {
     std::cerr << "could not find back right wheel joint" <<std::endl;
@@ -292,7 +298,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   std::string flWheelSteeringJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("front_left_wheel_steering");
   this->dataPtr->flWheelSteeringJoint =
-      this->dataPtr->model->GetJoint(flWheelSteeringJointName);
+    this->dataPtr->model->GetJoint(flWheelSteeringJointName);
   if (!this->dataPtr->flWheelSteeringJoint)
   {
     std::cerr << "could not find front left steering joint" <<std::endl;
@@ -302,7 +308,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   std::string frWheelSteeringJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("front_right_wheel_steering");
   this->dataPtr->frWheelSteeringJoint =
-      this->dataPtr->model->GetJoint(frWheelSteeringJointName);
+    this->dataPtr->model->GetJoint(frWheelSteeringJointName);
   if (!this->dataPtr->frWheelSteeringJoint)
   {
     std::cerr << "could not find front right steering joint" <<std::endl;
@@ -419,26 +425,26 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       this->dataPtr->brWheelJoint->GetChild()->GetCollision(id));
 
   /* gzerr << "wheel radius: "
-        << this->dataPtr->flWheelRadius << " "
-        << this->dataPtr->frWheelRadius << " "
-        << this->dataPtr->blWheelRadius << " "
-        << this->dataPtr->brWheelRadius << std::endl;*/
+     << this->dataPtr->flWheelRadius << " "
+     << this->dataPtr->frWheelRadius << " "
+     << this->dataPtr->blWheelRadius << " "
+     << this->dataPtr->brWheelRadius << std::endl;*/
 
   // Compute wheelbase, frontTrackWidth, and rearTrackWidth
   //  first compute the positions of the 4 wheel centers
   //  again assumes wheel link is child of joint and has only one collision
   ignition::math::Vector3d flCenterPos =
-      this->dataPtr->flWheelJoint->GetChild()->GetCollision(id)
-      ->GetWorldPose().pos.Ign();
+    this->dataPtr->flWheelJoint->GetChild()->GetCollision(id)
+    ->GetWorldPose().pos.Ign();
   ignition::math::Vector3d frCenterPos =
-      this->dataPtr->frWheelJoint->GetChild()->GetCollision(id)
-      ->GetWorldPose().pos.Ign();
+    this->dataPtr->frWheelJoint->GetChild()->GetCollision(id)
+    ->GetWorldPose().pos.Ign();
   ignition::math::Vector3d blCenterPos =
-      this->dataPtr->blWheelJoint->GetChild()->GetCollision(id)
-      ->GetWorldPose().pos.Ign();
+    this->dataPtr->blWheelJoint->GetChild()->GetCollision(id)
+    ->GetWorldPose().pos.Ign();
   ignition::math::Vector3d brCenterPos =
-      this->dataPtr->brWheelJoint->GetChild()->GetCollision(id)
-      ->GetWorldPose().pos.Ign();
+    this->dataPtr->brWheelJoint->GetChild()->GetCollision(id)
+    ->GetWorldPose().pos.Ign();
 
   // track widths are computed first
   ignition::math::Vector3d vec3 = flCenterPos - frCenterPos;
@@ -453,9 +459,9 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->wheelbaseLength = vec3.Length();
 
   /* gzerr << "wheel base length and track width: "
-        << this->dataPtr->wheelbaseLength << " "
-        << this->dataPtr->frontTrackWidth
-        << " " << this->dataPtr->backTrackWidth << std::endl; */
+     << this->dataPtr->wheelbaseLength << " "
+     << this->dataPtr->frontTrackWidth
+     << " " << this->dataPtr->backTrackWidth << std::endl; */
 
 
 
@@ -463,24 +469,33 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       this->dataPtr->handWheelForce, -this->dataPtr->handWheelForce);
 
   this->dataPtr->flWheelSteeringPID.Init(this->dataPtr->fLwheelSteeringPgain,
-                                this->dataPtr->fLwheelSteeringIgain,
-                                this->dataPtr->fLwheelSteeringDgain,
-                                0, 0, this->dataPtr->steeredWheelForce,
-                                -this->dataPtr->steeredWheelForce);
+      this->dataPtr->fLwheelSteeringIgain,
+      this->dataPtr->fLwheelSteeringDgain,
+      0, 0, this->dataPtr->steeredWheelForce,
+      -this->dataPtr->steeredWheelForce);
   this->dataPtr->frWheelSteeringPID.Init(this->dataPtr->fRwheelSteeringPgain,
-                                this->dataPtr->fRwheelSteeringIgain,
-                                this->dataPtr->fRwheelSteeringDgain,
-                                0, 0, this->dataPtr->steeredWheelForce,
-                                -this->dataPtr->steeredWheelForce);
+      this->dataPtr->fRwheelSteeringIgain,
+      this->dataPtr->fRwheelSteeringDgain,
+      0, 0, this->dataPtr->steeredWheelForce,
+      -this->dataPtr->steeredWheelForce);
 
 
   this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
       std::bind(&PriusHybridPlugin::Update, this));
 
   this->dataPtr->keyboardSub =
-      this->dataPtr->node->Subscribe("~/keyboard/keypress",
-      &PriusHybridPlugin::OnKeyPress, this, true);
+    this->dataPtr->gznode->Subscribe("~/keyboard/keypress",
+        &PriusHybridPlugin::OnKeyPress, this, true);
+}
 
+/////////////////////////////////////////////////
+void PriusHybridPlugin::OnCmdVel(const ignition::msgs::CmdVel2D &_msg)
+{
+  this->dataPtr->gasPedalPercent = std::min(_msg.velocity(), 1.0);
+  this->dataPtr->handWheelCmd = this->dataPtr->handWheelState + _msg.theta();
+
+  this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
+  this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
 }
 
 /////////////////////////////////////////////////
@@ -498,14 +513,14 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
       this->dataPtr->gasPedalPercent =
           std::min(this->dataPtr->gasPedalPercent, 1.0);
       this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
-      this->dataPtr->lastGasCmdTime = this->dataPtr->world->GetSimTime();
+      this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
       break;
     }
     // a - steer left
     case 97:
     {
       this->dataPtr->handWheelCmd = this->dataPtr->handWheelState + 0.1;
-      this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->GetSimTime();
+      this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
     // s - reverse
@@ -517,14 +532,14 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
       this->dataPtr->gasPedalPercent =
           std::min(this->dataPtr->gasPedalPercent, 1.0);
       this->dataPtr->directionState = PriusHybridPluginPrivate::REVERSE;
-      this->dataPtr->lastGasCmdTime = this->dataPtr->world->GetSimTime();
+      this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
       break;
     }
     // d - steer right
     case 100:
     {
       this->dataPtr->handWheelCmd = this->dataPtr->handWheelState - 0.1;
-      this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->GetSimTime();
+      this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
     // e brake
@@ -545,7 +560,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
 void PriusHybridPlugin::Update()
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  common::Time curTime = this->dataPtr->world->GetSimTime();
+  common::Time curTime = this->dataPtr->world->SimTime();
   double dt = (curTime - this->dataPtr->lastSimTime).Double();
   if (dt < 0)
   {

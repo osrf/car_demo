@@ -19,6 +19,7 @@
 #define PRIUSCUP_PLUGINS_PRIUSHYBRIDPLUGIN_HH_
 
 #include <ignition/math/Vector3.hh>
+#include <ignition/msgs/cmd_vel2d.pb.h>
 
 #include <gazebo/physics/physics.hh>
 #include <gazebo/transport/transport.hh>
@@ -45,6 +46,8 @@ namespace gazebo
     /// \brief Callback each time a key message is received.
     /// \param[in] _msg Keypress message.
     private: void OnKeyPress(ConstAnyPtr &_msg);
+
+    private: void OnCmdVel(const ignition::msgs::CmdVel2D &_msg);
 
     /// \brief Update on every time step
     private: void Update();
