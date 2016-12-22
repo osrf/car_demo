@@ -17,6 +17,7 @@
 
 #include <mutex>
 #include <ignition/transport/Node.hh>
+#include <ignition/transport/AdvertiseOptions.hh>
 
 #include "PriusHybridPlugin.hh"
 #include <gazebo/common/PID.hh>
@@ -48,6 +49,9 @@ namespace gazebo
 
     /// \brief Ignition transport node
     public: ignition::transport::Node node;
+
+    /// \brief Ignition transport position pub
+    public: ignition::transport::Node::Publisher posePub;
 
     /// \brief Physics update event connection
     public: event::ConnectionPtr updateConnection;
@@ -81,6 +85,9 @@ namespace gazebo
 
     /// \brief PID control for steering wheel joint
     public: common::PID handWheelPID;
+
+    /// \brief Last pose msg time
+    public: common::Time lastMsgTime;
 
     /// \brief Last sim time received
     public: common::Time lastSimTime;
@@ -244,6 +251,10 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->gznode->Init();
 
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
+
+  this->dataPtr->posePub = this->dataPtr->node.Advertise<ignition::msgs::Pose>(
+      "/prius_pose");
+
 
   std::string handWheelJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("steering_wheel");
@@ -571,6 +582,13 @@ void PriusHybridPlugin::Update()
   else if (ignition::math::equal(dt, 0.0))
   {
     return;
+  }
+
+  if ((curTime - this->dataPtr->lastMsgTime) > .5)
+  {
+    this->dataPtr->posePub.Publish(
+        ignition::msgs::Convert(this->dataPtr->model->GetWorldPose().Ign()));
+    this->dataPtr->lastMsgTime = curTime;
   }
 
   this->dataPtr->handWheelState =
