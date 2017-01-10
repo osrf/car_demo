@@ -435,16 +435,16 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   //  again assumes wheel link is child of joint and has only one collision
   ignition::math::Vector3d flCenterPos =
     this->dataPtr->flWheelJoint->GetChild()->GetCollision(id)
-    ->GetWorldPose().pos.Ign();
+    ->WorldPose().Pos();
   ignition::math::Vector3d frCenterPos =
     this->dataPtr->frWheelJoint->GetChild()->GetCollision(id)
-    ->GetWorldPose().pos.Ign();
+    ->WorldPose().Pos();
   ignition::math::Vector3d blCenterPos =
     this->dataPtr->blWheelJoint->GetChild()->GetCollision(id)
-    ->GetWorldPose().pos.Ign();
+    ->WorldPose().Pos();
   ignition::math::Vector3d brCenterPos =
     this->dataPtr->brWheelJoint->GetChild()->GetCollision(id)
-    ->GetWorldPose().pos.Ign();
+    ->WorldPose().Pos();
 
   // track widths are computed first
   ignition::math::Vector3d vec3 = flCenterPos - frCenterPos;
@@ -574,11 +574,11 @@ void PriusHybridPlugin::Update()
   }
 
   this->dataPtr->handWheelState =
-      this->dataPtr->handWheelJoint->GetAngle(0).Radian();
+      this->dataPtr->handWheelJoint->Position();
   this->dataPtr->flSteeringState =
-      this->dataPtr->flWheelSteeringJoint->GetAngle(0).Radian();
+      this->dataPtr->flWheelSteeringJoint->Position();
   this->dataPtr->frSteeringState =
-      this->dataPtr->frWheelSteeringJoint->GetAngle(0).Radian();
+      this->dataPtr->frWheelSteeringJoint->Position();
 
   this->dataPtr->flWheelState = this->dataPtr->flWheelJoint->GetVelocity(0);
   this->dataPtr->frWheelState = this->dataPtr->frWheelJoint->GetVelocity(0);
@@ -718,18 +718,18 @@ void PriusHybridPlugin::UpdateHandWheelRatio()
 {
   // The total range the steering wheel can rotate
   this->dataPtr->handWheelHigh =
-      this->dataPtr->handWheelJoint->GetHighStop(0).Radian();
+      this->dataPtr->handWheelJoint->UpperLimit(0);
   this->dataPtr->handWheelLow =
-      this->dataPtr->handWheelJoint->GetLowStop(0).Radian();
+      this->dataPtr->handWheelJoint->LowerLimit(0);
   double handWheelRange =
       this->dataPtr->handWheelHigh - this->dataPtr->handWheelLow;
   double high = std::min(
-      this->dataPtr->flWheelSteeringJoint->GetHighStop(0).Radian(),
-      this->dataPtr->frWheelSteeringJoint->GetHighStop(0).Radian());
+      this->dataPtr->flWheelSteeringJoint->UpperLimit(0),
+      this->dataPtr->frWheelSteeringJoint->UpperLimit(0));
   high = std::min(high, this->dataPtr->maxSteer);
   double low = std::max(
-      this->dataPtr->flWheelSteeringJoint->GetLowStop(0).Radian(),
-      this->dataPtr->frWheelSteeringJoint->GetLowStop(0).Radian());
+      this->dataPtr->flWheelSteeringJoint->LowerLimit(0),
+      this->dataPtr->frWheelSteeringJoint->LowerLimit(0));
   low = std::max(low, -this->dataPtr->maxSteer);
   double tireAngleRange = high - low;
 
