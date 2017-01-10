@@ -1,5 +1,6 @@
 set (dirs
   prius_hybrid
+  raceway
   sonoma_raceway_box
 )
 
