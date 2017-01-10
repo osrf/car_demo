@@ -12,7 +12,7 @@ code_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 DOCKER_GPU_PARAMS=" $(curl -s http://localhost:3476/docker/cli)"
 
-sudo docker run -it \
+sudo docker run \
   -v "/etc/localtime:/etc/localtime:ro" \
   -e DISPLAY=unix$DISPLAY \
   $DOCKER_GPU_PARAMS \
