@@ -24,6 +24,7 @@ RUN cd /priuscup \
  && npm install
 
 COPY _in_container_entry.bash /priuscup/entry.bash
+RUN chmod a+x /priuscup/entry.bash
 # Note, prius.ign was in ign-core
 COPY prius.ign /priuscup/prius.ign
 COPY cloudsim.pem.zip /priuscup/cloudsim-sim/server/keys.zip

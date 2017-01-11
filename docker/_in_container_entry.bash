@@ -9,6 +9,12 @@ cp /code/cloudsim-env.bash .env
 cp /code/cloudsim-options.json options.json
 npm start &
 
+source /usr/local/share/priuscup/setup.sh
 ignition --run /priuscup/prius.ign &
-export GAZEBO_MODEL_PATH=/usr/local/share/priuscup-0/models
-gzserver /usr/local/share/priuscup-0/worlds/sonoma_raceway_box.world
+gzserver --verbose /usr/local/share/priuscup-0/worlds/sonoma_raceway_box.world
+
+ret=$?
+if [ ret -ne 0 ]
+then
+    echo "Gazebo exited with code $ret"
+fi
