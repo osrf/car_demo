@@ -243,6 +243,9 @@ namespace gazebo
     /// \brief Logger stream that writes to file
     public: std::ofstream loggerStream;
 
+    /// \brief Rate (hz) at which data are logged.
+    public: double logRate = 1;
+
     /// \brief Last model world pose written to log
     public: ignition::math::Pose3d lastModelWorldPose;
   };
@@ -261,6 +264,9 @@ PriusHybridPlugin::PriusHybridPlugin()
   this->dataPtr->frWheelRadius = 0.3;
   this->dataPtr->blWheelRadius = 0.3;
   this->dataPtr->brWheelRadius = 0.3;
+
+  // hz
+  this->dataPtr->logRate = 20;
 }
 
 /////////////////////////////////////////////////
@@ -553,6 +559,7 @@ void PriusHybridPlugin::RunLogger()
 
       this->dataPtr->lastModelWorldPose = data.pose;
     }
+    this->dataPtr->loggerStream.flush();
   }
 
   this->dataPtr->loggerStream.close();
@@ -802,7 +809,8 @@ void PriusHybridPlugin::Update()
 
   // push to logger list
   std::lock_guard<std::mutex> loggerLock(this->dataPtr->loggerMutex);
-  if ((curTime - this->dataPtr->lastLoggerWriteTime).Double() > 1.0)
+  if ((curTime - this->dataPtr->lastLoggerWriteTime).Double() >=
+      1.0/this->dataPtr->logRate)
   {
     this->dataPtr->lastLoggerWriteTime = curTime;
 
