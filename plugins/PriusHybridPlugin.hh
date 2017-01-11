@@ -43,11 +43,15 @@ namespace gazebo
     /// \brief Load the controller.
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
 
+    /// \brief Background thread for the data logger
+    private: void RunLogger();
+
     /// \brief Callback each time a key message is received.
     /// \param[in] _msg Keypress message.
     private: void OnKeyPress(ConstAnyPtr &_msg);
 
-    private: void OnCmdVel(const ignition::msgs::CmdVel2D &_msg);
+//    private: void OnCmdVel(const ignition::msgs::CmdVel2D &_msg);
+    private: void OnCmdVel(const ignition::msgs::Pose &_msg);
 
     /// \brief Update on every time step
     private: void Update();

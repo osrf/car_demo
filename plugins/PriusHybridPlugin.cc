@@ -15,7 +15,11 @@
  *
 */
 
+#include <fstream>
 #include <mutex>
+#include <thread>
+
+#include <ignition/math/Pose3.hh>
 #include <ignition/transport/Node.hh>
 
 #include "PriusHybridPlugin.hh"
@@ -24,6 +28,13 @@
 
 namespace gazebo
 {
+  class PriusData
+  {
+    public: double timestamp = 0.0;
+    public: ignition::math::Pose3d pose;
+    public: double fuelEfficiency = 0.0;
+  };
+
   class PriusHybridPluginPrivate
   {
     /// \enum DirectionType
@@ -210,6 +221,30 @@ namespace gazebo
 
     /// \brief Mutex to protect updates
     public: std::mutex mutex;
+
+    /// \brief Mutex to protect logger writes
+    public: std::mutex loggerMutex;
+
+    /// \brief Thread to log data
+    public: std::unique_ptr<std::thread> loggerThread;
+
+    /// \brief Time last data were pushed to logger
+    public: common::Time lastLoggerWriteTime;
+
+    /// \brief List of data to write to file
+    public: std::list<PriusData> dataPoints;
+
+    /// \brief Total distance traveled.
+    public: double totalDistance = 0;
+
+    /// \brief Flag used to determine when to quit the logger thread
+    public: bool quit = false;
+
+    /// \brief Logger stream that writes to file
+    public: std::ofstream loggerStream;
+
+    /// \brief Last model world pose written to log
+    public: ignition::math::Pose3d lastModelWorldPose;
   };
 }
 
@@ -232,6 +267,9 @@ PriusHybridPlugin::PriusHybridPlugin()
 PriusHybridPlugin::~PriusHybridPlugin()
 {
   this->dataPtr->updateConnection.reset();
+  this->dataPtr->quit = true;
+  this->dataPtr->loggerThread->join();
+  this->dataPtr->loggerThread.reset();
 }
 
 /////////////////////////////////////////////////
@@ -480,6 +518,9 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       -this->dataPtr->steeredWheelForce);
 
 
+  this->dataPtr->loggerThread.reset(new std::thread(
+      std::bind(&PriusHybridPlugin::RunLogger, this)));
+
   this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
       std::bind(&PriusHybridPlugin::Update, this));
 
@@ -489,10 +530,52 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 }
 
 /////////////////////////////////////////////////
-void PriusHybridPlugin::OnCmdVel(const ignition::msgs::CmdVel2D &_msg)
+void PriusHybridPlugin::RunLogger()
+{
+  this->dataPtr->loggerStream.open("prius_data.txt");
+
+  while (!this->dataPtr->quit)
+  {
+    common::Time::MSleep(200);
+    std::lock_guard<std::mutex> loggerLock(this->dataPtr->loggerMutex);
+
+    // write to file
+    while (!this->dataPtr->dataPoints.empty())
+    {
+      auto data = this->dataPtr->dataPoints.front();
+      this->dataPtr->dataPoints.pop_front();
+      double distance = (data.pose.Pos() -
+          this->dataPtr->lastModelWorldPose.Pos()).Length();
+      this->dataPtr->totalDistance += distance;
+      this->dataPtr->loggerStream
+          << data.timestamp << ", " << this->dataPtr->totalDistance << ", "
+          << data.fuelEfficiency << "\n";
+
+      this->dataPtr->lastModelWorldPose = data.pose;
+    }
+  }
+
+  this->dataPtr->loggerStream.close();
+}
+
+/////////////////////////////////////////////////
+/*void PriusHybridPlugin::OnCmdVel(const ignition::msgs::CmdVel2D &_msg)
 {
   this->dataPtr->gasPedalPercent = std::min(_msg.velocity(), 1.0);
   this->dataPtr->handWheelCmd = this->dataPtr->handWheelState + _msg.theta();
+
+  this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
+  this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
+}*/
+
+/////////////////////////////////////////////////
+void PriusHybridPlugin::OnCmdVel(const ignition::msgs::Pose &_msg)
+{
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
+  this->dataPtr->gasPedalPercent = std::min(_msg.position().x(), 1.0);
+  this->dataPtr->handWheelCmd = _msg.position().y();
+  this->dataPtr->brakePedalPercent = _msg.position().z();
 
   this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
   this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
@@ -566,6 +649,10 @@ void PriusHybridPlugin::Update()
   {
     // has time been reset?
     this->dataPtr->lastSimTime = curTime;
+
+    std::lock_guard<std::mutex> loggerLock(this->dataPtr->loggerMutex);
+    this->dataPtr->totalDistance = 0;
+    this->dataPtr->lastModelWorldPose = ignition::math::Pose3d::Zero;
     return;
   }
   else if (ignition::math::equal(dt, 0.0))
@@ -710,6 +797,20 @@ void PriusHybridPlugin::Update()
   if ((curTime - this->dataPtr->lastSteeringCmdTime).Double() > 1.0)
   {
     this->dataPtr->handWheelCmd = 0;
+  }
+
+
+  // push to logger list
+  std::lock_guard<std::mutex> loggerLock(this->dataPtr->loggerMutex);
+  if ((curTime - this->dataPtr->lastLoggerWriteTime).Double() > 1.0)
+  {
+    this->dataPtr->lastLoggerWriteTime = curTime;
+
+    PriusData data;
+    data.timestamp = curTime.Double();
+    data.pose = this->dataPtr->model->GetWorldPose().Ign();
+    data.fuelEfficiency= 1;
+    this->dataPtr->dataPoints.push_back(data);
   }
 }
 
