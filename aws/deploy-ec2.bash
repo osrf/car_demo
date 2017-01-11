@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 if [ $# -ne 3 ]
 then
@@ -12,11 +12,16 @@ image_name=$1
 path_to_key=$2
 dest=$3
 
-# Get password before piping stuff
-sudo echo "Loading"
+
+# Copy startup folder to instance
+scp -r -i $path_to_key $DIR/startup $dest:
+ssh -i $path_to_key $dest './startup/install.bash'
 
 # copy the cloudsim_deploy.bash script to the ec2 instance
 scp -i $path_to_key $DIR/cloudsim_deploy.bash $dest:code/cloudsim_deploy.bash
+
+# Get password before piping stuff
+sudo echo "Loading"
 
 # Copy the docker image to an ec2 instance running ubuntu-nvidia-docker AMI
 sudo docker save $image_name | bzip2 | pv | ssh -i $path_to_key $dest 'bunzip2 | docker load'

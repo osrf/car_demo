@@ -40,23 +40,20 @@ do
     fi
     
     cd $BLD/${comp}_$branch
-    if [ $install_only -eq 0 ]
+    if [ "ign-core" = $comp ]
     then
-        if [ "ign-core" = $comp ]
+        # run as root to workaround for ign-core issue #1
+        if [ $build_exists = "false" ]
         then
-            # run as root to workaround for ign-core issue #1
-            if [ $build_exists = "false" ]
-            then
-                sudo cmake $SRC/$comp
-            fi
-            sudo make -j8
-        else
-            if [ $build_exists = "false" ]
-            then
-                cmake $SRC/$comp
-            fi
-            make -j8
+            sudo cmake $SRC/$comp
         fi
+        sudo make -j8
+    else
+        if [ $build_exists = "false" ]
+        then
+            cmake $SRC/$comp
+        fi
+        make -j8
     fi
     sudo make install
     printf "${red}end $comp${normal}\n"
