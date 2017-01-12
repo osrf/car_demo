@@ -50,6 +50,10 @@ namespace gazebo
     /// \param[in] _msg Keypress message.
     private: void OnKeyPress(ConstAnyPtr &_msg);
 
+    /// \brief Callback each time a key message is received.
+    /// \param[in] _msg Keypress message.
+    private: void OnKeyPressIgn(const ignition::msgs::Any &_msg);
+
 //    private: void OnCmdVel(const ignition::msgs::CmdVel2D &_msg);
     private: void OnCmdVel(const ignition::msgs::Pose &_msg);
 

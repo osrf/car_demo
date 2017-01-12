@@ -533,6 +533,10 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->keyboardSub =
     this->dataPtr->gznode->Subscribe("~/keyboard/keypress",
         &PriusHybridPlugin::OnKeyPress, this, true);
+
+
+  this->dataPtr->node.Subscribe("/keypress", &PriusHybridPlugin::OnKeyPressIgn,
+      this);
 }
 
 /////////////////////////////////////////////////
@@ -597,6 +601,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
   switch (_msg->int_value())
   {
     // w - accelerate forward
+    case 87:
     case 119:
     {
       this->dataPtr->gasPedalPercent += 0.1;
@@ -607,6 +612,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
       break;
     }
     // a - steer left
+    case 65:
     case 97:
     {
       this->dataPtr->handWheelCmd = this->dataPtr->handWheelState + 0.1;
@@ -614,6 +620,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
       break;
     }
     // s - reverse
+    case 83:
     case 115:
     {
       if (this->dataPtr->directionState != PriusHybridPluginPrivate::REVERSE)
@@ -626,6 +633,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
       break;
     }
     // d - steer right
+    case 68:
     case 100:
     {
       this->dataPtr->handWheelCmd = this->dataPtr->handWheelState - 0.1;
@@ -633,17 +641,24 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
       break;
     }
     // e brake
+    case 69:
     case 101:
     {
       this->dataPtr->brakePedalPercent = 1.0;
+      this->dataPtr->gasPedalPercent = 0.0;
+      this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
       break;
     }
     default:
     {
-      this->dataPtr->gasPedalPercent = 0;
       break;
     }
   }
+}
+
+/////////////////////////////////////////////////
+void PriusHybridPlugin::OnKeyPressIgn(const ignition::msgs::Any &_msg)
+{
 }
 
 /////////////////////////////////////////////////
@@ -795,13 +810,13 @@ void PriusHybridPlugin::Update()
   // gzerr << "gas and brake torque " << flGasTorque << " "
   //       << flBrakeTorque << std::endl;
 
-  // reset last command is more than 1sec ago
-  if ((curTime - this->dataPtr->lastGasCmdTime).Double() > 1.0)
+  // reset if last command is more than x sec ago
+  if ((curTime - this->dataPtr->lastGasCmdTime).Double() > 0.3)
   {
     this->dataPtr->gasPedalPercent = 0.0;
     this->dataPtr->brakePedalPercent = 0.0;
   }
-  if ((curTime - this->dataPtr->lastSteeringCmdTime).Double() > 1.0)
+  if ((curTime - this->dataPtr->lastSteeringCmdTime).Double() > 0.3)
   {
     this->dataPtr->handWheelCmd = 0;
   }
