@@ -724,6 +724,7 @@ void PriusHybridPlugin::Update()
     this->dataPtr->gasPedalPercent = 0.0;
     this->dataPtr->brakePedalPercent = 0.0;
   }
+
   if ((curTime - this->dataPtr->lastSteeringCmdTime).Double() > 1.0)
   {
     this->dataPtr->handWheelCmd = 0;
