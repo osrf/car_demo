@@ -239,6 +239,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   this->dataPtr->model = _model;
   this->dataPtr->world = this->dataPtr->model->GetWorld();
+  auto physicsEngine = this->dataPtr->world->Physics();
+  physicsEngine->SetParam("friction_model", std::string("cone_model"));
 
   this->dataPtr->gznode = transport::NodePtr(new transport::Node());
   this->dataPtr->gznode->Init();
