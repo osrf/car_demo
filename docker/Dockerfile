@@ -21,13 +21,13 @@ RUN mkdir /priuscup \
 RUN cd /priuscup \
  && hg clone https://bitbucket.org/osrf/cloudsim-sim \
  && cd cloudsim-sim \
- && npm install
+ && npm install \
+ && touch /priuscup/cloudsim-sim/server/keys.zip
 
 COPY _in_container_entry.bash /priuscup/entry.bash
 RUN chmod a+x /priuscup/entry.bash
 # Note, prius.ign was in ign-core
 COPY prius.ign /priuscup/prius.ign
-COPY cloudsim.pem.zip /priuscup/cloudsim-sim/server/keys.zip
 
 # add a new with my userid and group id
 ARG user_id
