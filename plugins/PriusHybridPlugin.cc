@@ -237,9 +237,6 @@ namespace gazebo
     /// \brief Odometer
     public: double odom = 0.0;
 
-    /// \brief Linear velocity
-    public: double linearVel = 0.0;
-
     /// \brief Mutex to protect logger writes
     public: std::mutex loggerMutex;
 
@@ -579,6 +576,7 @@ void PriusHybridPlugin::RunLogger()
       auto data = this->dataPtr->dataPoints.front();
       this->dataPtr->dataPoints.pop_front();
       this->dataPtr->loggerStream
+          << std::fixed
           << data.timestamp << ", "
           << data.gear << ", "
           << data.odom << ", "
@@ -590,16 +588,6 @@ void PriusHybridPlugin::RunLogger()
 
   this->dataPtr->loggerStream.close();
 }
-
-/////////////////////////////////////////////////
-/*void PriusHybridPlugin::OnCmdVel(const ignition::msgs::CmdVel2D &_msg)
-{
-  this->dataPtr->gasPedalPercent = std::min(_msg.velocity(), 1.0);
-  this->dataPtr->handWheelCmd = this->dataPtr->handWheelAngle + _msg.theta();
-
-  this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
-  this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
-}*/
 
 /////////////////////////////////////////////////
 void PriusHybridPlugin::OnCmdVel(const ignition::msgs::Pose &_msg)
@@ -929,18 +917,18 @@ void PriusHybridPlugin::Update()
   }
 
   // linearVel (meter/sec) = (2*PI*r) * (rad/sec).
-  double linearVel = (2.0 * IGN_PI * this->dataPtr->flWheelRadius) *
-    ((this->dataPtr->flWheelAngularVelocity +
-      this->dataPtr->frWheelAngularVelocity) * 0.5);
+  double linearVel = (2.0 * IGN_PI * this->dataPtr->blWheelRadius) *
+    ((this->dataPtr->blWheelAngularVelocity +
+      this->dataPtr->brWheelAngularVelocity) * 0.5);
 
   // Convert meter/sec to miles/hour
   linearVel *= 2.23694;
 
   // Distance traveled in miles.
-  this->dataPtr->odom += (fabs(this->dataPtr->linearVel) * dt/3600);
+  this->dataPtr->odom += (fabs(linearVel) * dt/3600.0);
 
   // \todo: Actually compute MPG
-  double mpg = 1.0 / std::max(this->dataPtr->linearVel, 0.0);
+  double mpg = 1.0 / std::max(linearVel, 0.0);
 
   if ((curTime - this->dataPtr->lastMsgTime) > .5)
   {
@@ -955,7 +943,7 @@ void PriusHybridPlugin::Update()
       consoleMsg.add_data(3.0);
 
     // MPH. A speedometer does not go negative.
-    consoleMsg.add_data(std::max(this->dataPtr->linearVel, 0.0));
+    consoleMsg.add_data(std::max(linearVel, 0.0));
 
     // MPG
     consoleMsg.add_data(mpg);
@@ -968,8 +956,6 @@ void PriusHybridPlugin::Update()
     // Output prius car data.
     this->dataPtr->posePub.Publish(
         ignition::msgs::Convert(this->dataPtr->model->WorldPose()));
-
-
 
     this->dataPtr->lastMsgTime = curTime;
   }
