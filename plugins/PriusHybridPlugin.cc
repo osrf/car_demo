@@ -53,6 +53,9 @@ namespace gazebo
     /// \brief Ignition transport position pub
     public: ignition::transport::Node::Publisher posePub;
 
+    /// \brief Ignition transport position pub
+    public: ignition::transport::Node::Publisher consolePub;
+
     /// \brief Physics update event connection
     public: event::ConnectionPtr updateConnection;
 
@@ -217,6 +220,9 @@ namespace gazebo
 
     /// \brief Mutex to protect updates
     public: std::mutex mutex;
+
+    /// \brief Odometer
+    public: double odom;
   };
 }
 
@@ -254,7 +260,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->dataPtr->posePub = this->dataPtr->node.Advertise<ignition::msgs::Pose>(
       "/prius_pose");
-
+  this->dataPtr->consolePub =
+    this->dataPtr->node.Advertise<ignition::msgs::Double_V>("/prius_console");
 
   std::string handWheelJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("steering_wheel");
@@ -446,16 +453,16 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   //  again assumes wheel link is child of joint and has only one collision
   ignition::math::Vector3d flCenterPos =
     this->dataPtr->flWheelJoint->GetChild()->GetCollision(id)
-    ->GetWorldPose().pos.Ign();
+    ->WorldPose().Pos();
   ignition::math::Vector3d frCenterPos =
     this->dataPtr->frWheelJoint->GetChild()->GetCollision(id)
-    ->GetWorldPose().pos.Ign();
+    ->WorldPose().Pos();
   ignition::math::Vector3d blCenterPos =
     this->dataPtr->blWheelJoint->GetChild()->GetCollision(id)
-    ->GetWorldPose().pos.Ign();
+    ->WorldPose().Pos();
   ignition::math::Vector3d brCenterPos =
     this->dataPtr->brWheelJoint->GetChild()->GetCollision(id)
-    ->GetWorldPose().pos.Ign();
+    ->WorldPose().Pos();
 
   // track widths are computed first
   ignition::math::Vector3d vec3 = flCenterPos - frCenterPos;
@@ -577,6 +584,7 @@ void PriusHybridPlugin::Update()
   {
     // has time been reset?
     this->dataPtr->lastSimTime = curTime;
+    this->dataPtr->lastMsgTime = curTime;
     return;
   }
   else if (ignition::math::equal(dt, 0.0))
@@ -584,19 +592,13 @@ void PriusHybridPlugin::Update()
     return;
   }
 
-  if ((curTime - this->dataPtr->lastMsgTime) > .5)
-  {
-    this->dataPtr->posePub.Publish(
-        ignition::msgs::Convert(this->dataPtr->model->GetWorldPose().Ign()));
-    this->dataPtr->lastMsgTime = curTime;
-  }
 
-  this->dataPtr->handWheelState =
-      this->dataPtr->handWheelJoint->GetAngle(0).Radian();
+
+  this->dataPtr->handWheelState = this->dataPtr->handWheelJoint->Position(0);
   this->dataPtr->flSteeringState =
-      this->dataPtr->flWheelSteeringJoint->GetAngle(0).Radian();
+      this->dataPtr->flWheelSteeringJoint->Position(0);
   this->dataPtr->frSteeringState =
-      this->dataPtr->frWheelSteeringJoint->GetAngle(0).Radian();
+      this->dataPtr->frWheelSteeringJoint->Position(0);
 
   this->dataPtr->flWheelState = this->dataPtr->flWheelJoint->GetVelocity(0);
   this->dataPtr->frWheelState = this->dataPtr->frWheelJoint->GetVelocity(0);
@@ -729,25 +731,64 @@ void PriusHybridPlugin::Update()
   {
     this->dataPtr->handWheelCmd = 0;
   }
+
+  if ((curTime - this->dataPtr->lastMsgTime) > .5)
+  {
+    this->dataPtr->posePub.Publish(
+        ignition::msgs::Convert(this->dataPtr->model->WorldPose()));
+
+    ignition::msgs::Double_V consoleMsg;
+
+    // linearVel (meter/sec) = (2*PI*r) * (rad/sec).
+    double linearVel = (2.0 * IGN_PI * this->dataPtr->flWheelRadius) *
+      ((this->dataPtr->flWheelState + this->dataPtr->frWheelState) * 0.5);
+
+    // Convert meter/sec to miles/hour
+    linearVel *= 2.23694;
+
+    // Distance traveled in miles.
+    this->dataPtr->odom += (fabs(linearVel) * dt/3600);
+
+    // \todo: Actually compute MPG
+    double mpg = 1.0 / std::max(linearVel, 0.0);
+
+    // Gear information: 1=drive, 2=reverse, 3=neutral
+    if (this->dataPtr->directionState == PriusHybridPluginPrivate::FORWARD)
+      consoleMsg.add_data(1.0);
+    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::REVERSE)
+      consoleMsg.add_data(2.0);
+    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
+      consoleMsg.add_data(3.0);
+
+    // MPH. A speedometer does not go negative.
+    consoleMsg.add_data(std::max(linearVel, 0.0));
+
+    // MPG
+    consoleMsg.add_data(mpg);
+
+    // Miles
+    consoleMsg.add_data(this->dataPtr->odom);
+
+    this->dataPtr->consolePub.Publish(consoleMsg);
+    this->dataPtr->lastMsgTime = curTime;
+  }
 }
 
 /////////////////////////////////////////////////
 void PriusHybridPlugin::UpdateHandWheelRatio()
 {
   // The total range the steering wheel can rotate
-  this->dataPtr->handWheelHigh =
-      this->dataPtr->handWheelJoint->GetHighStop(0).Radian();
-  this->dataPtr->handWheelLow =
-      this->dataPtr->handWheelJoint->GetLowStop(0).Radian();
+  this->dataPtr->handWheelHigh = this->dataPtr->handWheelJoint->UpperLimit(0);
+  this->dataPtr->handWheelLow = this->dataPtr->handWheelJoint->LowerLimit(0);
   double handWheelRange =
       this->dataPtr->handWheelHigh - this->dataPtr->handWheelLow;
   double high = std::min(
-      this->dataPtr->flWheelSteeringJoint->GetHighStop(0).Radian(),
-      this->dataPtr->frWheelSteeringJoint->GetHighStop(0).Radian());
+      this->dataPtr->flWheelSteeringJoint->UpperLimit(0),
+      this->dataPtr->frWheelSteeringJoint->UpperLimit(0));
   high = std::min(high, this->dataPtr->maxSteer);
   double low = std::max(
-      this->dataPtr->flWheelSteeringJoint->GetLowStop(0).Radian(),
-      this->dataPtr->frWheelSteeringJoint->GetLowStop(0).Radian());
+      this->dataPtr->flWheelSteeringJoint->LowerLimit(0),
+      this->dataPtr->frWheelSteeringJoint->LowerLimit(0));
   low = std::max(low, -this->dataPtr->maxSteer);
   double tireAngleRange = high - low;
 
