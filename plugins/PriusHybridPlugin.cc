@@ -261,9 +261,9 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
 
   this->dataPtr->posePub = this->dataPtr->node.Advertise<ignition::msgs::Pose>(
-      "/prius_pose");
+      "/prius/pose");
   this->dataPtr->consolePub =
-    this->dataPtr->node.Advertise<ignition::msgs::Double_V>("/prius_console");
+    this->dataPtr->node.Advertise<ignition::msgs::Double_V>("/prius/console");
 
   std::string handWheelJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("steering_wheel");
@@ -602,8 +602,6 @@ void PriusHybridPlugin::Update()
     return;
   }
 
-
-
   this->dataPtr->handWheelState = this->dataPtr->handWheelJoint->Position(0);
   this->dataPtr->flSteeringState =
       this->dataPtr->flWheelSteeringJoint->Position();
@@ -620,8 +618,8 @@ void PriusHybridPlugin::Update()
   // PID (position) steering
   this->dataPtr->handWheelCmd =
     ignition::math::clamp(this->dataPtr->handWheelCmd,
-                         -this->dataPtr->maxSteer / this->dataPtr->steeringRatio,
-                          this->dataPtr->maxSteer / this->dataPtr->steeringRatio);
+        -this->dataPtr->maxSteer / this->dataPtr->steeringRatio,
+        this->dataPtr->maxSteer / this->dataPtr->steeringRatio);
   double steerError =
       this->dataPtr->handWheelState - this->dataPtr->handWheelCmd;
   double steerCmd = this->dataPtr->handWheelPID.Update(steerError, dt);
@@ -648,17 +646,23 @@ void PriusHybridPlugin::Update()
       this->dataPtr->flSteeringState - this->dataPtr->flWheelSteeringCmd;
   double flwsCmd = this->dataPtr->flWheelSteeringPID.Update(flwsError, dt);
   this->dataPtr->flWheelSteeringJoint->SetForce(0, flwsCmd);
-  //this->dataPtr->flWheelSteeringJoint->SetPosition(0, this->dataPtr->flWheelSteeringCmd);
-  //this->dataPtr->flWheelSteeringJoint->SetLowStop(0, this->dataPtr->flWheelSteeringCmd);
-  //this->dataPtr->flWheelSteeringJoint->SetHighStop(0, this->dataPtr->flWheelSteeringCmd);
+  // this->dataPtr->flWheelSteeringJoint->SetPosition(0,
+  // this->dataPtr->flWheelSteeringCmd);
+  // this->dataPtr->flWheelSteeringJoint->SetLowStop(0,
+  // this->dataPtr->flWheelSteeringCmd);
+  // this->dataPtr->flWheelSteeringJoint->SetHighStop(0,
+  // this->dataPtr->flWheelSteeringCmd);
 
   double frwsError =
       this->dataPtr->frSteeringState - this->dataPtr->frWheelSteeringCmd;
   double frwsCmd = this->dataPtr->frWheelSteeringPID.Update(frwsError, dt);
   this->dataPtr->frWheelSteeringJoint->SetForce(0, frwsCmd);
-  //this->dataPtr->frWheelSteeringJoint->SetPosition(0, this->dataPtr->frWheelSteeringCmd);
-  //this->dataPtr->frWheelSteeringJoint->SetLowStop(0, this->dataPtr->frWheelSteeringCmd);
-  //this->dataPtr->frWheelSteeringJoint->SetHighStop(0, this->dataPtr->frWheelSteeringCmd);
+  // this->dataPtr->frWheelSteeringJoint->SetPosition(0,
+  // this->dataPtr->frWheelSteeringCmd);
+  // this->dataPtr->frWheelSteeringJoint->SetLowStop(0,
+  // this->dataPtr->frWheelSteeringCmd);
+  // this->dataPtr->frWheelSteeringJoint->SetHighStop(0,
+  // this->dataPtr->frWheelSteeringCmd);
 
   // Gas pedal torque.
   // Map gas torques to individual wheels.
@@ -697,10 +701,14 @@ void PriusHybridPlugin::Update()
 
   brakePercent = ignition::math::clamp(
       brakePercent, this->dataPtr->minBrakePercent, 1.0);
-  this->dataPtr->flWheelJoint->SetParam("friction", 1, brakePercent * this->dataPtr->frontBrakeTorque);
-  this->dataPtr->frWheelJoint->SetParam("friction", 1, brakePercent * this->dataPtr->frontBrakeTorque);
-  this->dataPtr->blWheelJoint->SetParam("friction", 0, brakePercent * this->dataPtr->backBrakeTorque);
-  this->dataPtr->brWheelJoint->SetParam("friction", 0, brakePercent * this->dataPtr->backBrakeTorque);
+  this->dataPtr->flWheelJoint->SetParam("friction", 1,
+      brakePercent * this->dataPtr->frontBrakeTorque);
+  this->dataPtr->frWheelJoint->SetParam("friction", 1,
+      brakePercent * this->dataPtr->frontBrakeTorque);
+  this->dataPtr->blWheelJoint->SetParam("friction", 0,
+      brakePercent * this->dataPtr->backBrakeTorque);
+  this->dataPtr->brWheelJoint->SetParam("friction", 0,
+      brakePercent * this->dataPtr->backBrakeTorque);
 
   this->dataPtr->flWheelJoint->SetForce(1, flGasTorque);
   this->dataPtr->frWheelJoint->SetForce(1, frGasTorque);
@@ -721,6 +729,7 @@ void PriusHybridPlugin::Update()
     this->dataPtr->handWheelCmd = 0;
   }
 
+  // Output prius car data.
   if ((curTime - this->dataPtr->lastMsgTime) > .5)
   {
     this->dataPtr->posePub.Publish(
