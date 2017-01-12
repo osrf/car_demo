@@ -32,8 +32,10 @@ namespace gazebo
   class PriusData
   {
     public: double timestamp = 0.0;
-    public: ignition::math::Pose3d pose;
-    public: double fuelEfficiency = 0.0;
+    public: double odom = 0.0;
+    public: double mph = 0.0;
+    public: double mpg = 0.0;
+    public: std::string gear = "drive";
   };
 
   class PriusHybridPluginPrivate
@@ -233,7 +235,10 @@ namespace gazebo
     public: std::mutex mutex;
 
     /// \brief Odometer
-    public: double odom;
+    public: double odom = 0.0;
+
+    /// \brief Linear velocity
+    public: double linearVel = 0.0;
 
     /// \brief Mutex to protect logger writes
     public: std::mutex loggerMutex;
@@ -258,9 +263,6 @@ namespace gazebo
 
     /// \brief Rate (hz) at which data are logged.
     public: double logRate = 1;
-
-    /// \brief Last model world pose written to log
-    public: ignition::math::Pose3d lastModelWorldPose;
 
     /// \brief Keyboard control type
     public: int keyControl = 0;
@@ -556,7 +558,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->dataPtr->gznode->Subscribe("~/keyboard/keypress",
         &PriusHybridPlugin::OnKeyPress, this, true);
 
-
   this->dataPtr->node.Subscribe("/keypress", &PriusHybridPlugin::OnKeyPressIgn,
       this);
 }
@@ -565,6 +566,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 void PriusHybridPlugin::RunLogger()
 {
   this->dataPtr->loggerStream.open("prius_data.txt");
+  this->dataPtr->loggerStream << "# Timestamp, gear, odom, mph, mpg\n";
 
   while (!this->dataPtr->quit)
   {
@@ -576,14 +578,12 @@ void PriusHybridPlugin::RunLogger()
     {
       auto data = this->dataPtr->dataPoints.front();
       this->dataPtr->dataPoints.pop_front();
-      double distance = (data.pose.Pos() -
-          this->dataPtr->lastModelWorldPose.Pos()).Length();
-      this->dataPtr->totalDistance += distance;
       this->dataPtr->loggerStream
-          << data.timestamp << ", " << this->dataPtr->totalDistance << ", "
-          << data.fuelEfficiency << "\n";
-
-      this->dataPtr->lastModelWorldPose = data.pose;
+          << data.timestamp << ", "
+          << data.gear << ", "
+          << data.odom << ", "
+          << data.mph << ", "
+          << data.mpg << "\n";
     }
     this->dataPtr->loggerStream.flush();
   }
@@ -704,7 +704,7 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 65:
     case 97:
     {
-      this->dataPtr->handWheelCmd = this->dataPtr->handWheelState + 0.1;
+      this->dataPtr->handWheelCmd = this->dataPtr->handWheelAngle + 0.1;
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -725,7 +725,7 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 68:
     case 100:
     {
-      this->dataPtr->handWheelCmd = this->dataPtr->handWheelState - 0.1;
+      this->dataPtr->handWheelCmd = this->dataPtr->handWheelAngle - 0.1;
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -787,7 +787,6 @@ void PriusHybridPlugin::Update()
 
     std::lock_guard<std::mutex> loggerLock(this->dataPtr->loggerMutex);
     this->dataPtr->totalDistance = 0;
-    this->dataPtr->lastModelWorldPose = ignition::math::Pose3d::Zero;
     return;
   }
   else if (ignition::math::equal(dt, 0.0))
@@ -874,18 +873,19 @@ void PriusHybridPlugin::Update()
   double flGasTorque = 0, frGasTorque = 0, blGasTorque = 0, brGasTorque = 0;
   // Apply equal torque at left and right wheels, which is an implicit model
   // of the differential.
-  if ((fabs(this->dataPtr->flWheelAngularVelocity * this->dataPtr->flWheelRadius) <
-      this->dataPtr->maxSpeed)
-      && (fabs(this->dataPtr->frWheelAngularVelocity * this->dataPtr->frWheelRadius) <
-      this->dataPtr->maxSpeed))
+  if ((fabs(this->dataPtr->flWheelAngularVelocity *
+          this->dataPtr->flWheelRadius) < this->dataPtr->maxSpeed)
+      && (fabs(this->dataPtr->frWheelAngularVelocity *
+          this->dataPtr->frWheelRadius) < this->dataPtr->maxSpeed))
   {
     flGasTorque = gasPercent*this->dataPtr->frontTorque * gasMultiplier;
     frGasTorque = gasPercent*this->dataPtr->frontTorque * gasMultiplier;
   }
-  if ((fabs(this->dataPtr->blWheelAngularVelocity * this->dataPtr->blWheelRadius) <
-      this->dataPtr->maxSpeed)
-      && (fabs(this->dataPtr->brWheelAngularVelocity * this->dataPtr->brWheelRadius) <
-      this->dataPtr->maxSpeed))
+
+  if ((fabs(this->dataPtr->blWheelAngularVelocity *
+          this->dataPtr->blWheelRadius) < this->dataPtr->maxSpeed)
+      && (fabs(this->dataPtr->brWheelAngularVelocity *
+          this->dataPtr->brWheelRadius) < this->dataPtr->maxSpeed))
   {
     blGasTorque = gasPercent * this->dataPtr->backTorque * gasMultiplier;
     brGasTorque = gasPercent * this->dataPtr->backTorque * gasMultiplier;
@@ -928,27 +928,23 @@ void PriusHybridPlugin::Update()
     this->dataPtr->handWheelCmd = 0;
   }
 
-  // Output prius car data.
+  // linearVel (meter/sec) = (2*PI*r) * (rad/sec).
+  double linearVel = (2.0 * IGN_PI * this->dataPtr->flWheelRadius) *
+    ((this->dataPtr->flWheelAngularVelocity +
+      this->dataPtr->frWheelAngularVelocity) * 0.5);
+
+  // Convert meter/sec to miles/hour
+  linearVel *= 2.23694;
+
+  // Distance traveled in miles.
+  this->dataPtr->odom += (fabs(this->dataPtr->linearVel) * dt/3600);
+
+  // \todo: Actually compute MPG
+  double mpg = 1.0 / std::max(this->dataPtr->linearVel, 0.0);
+
   if ((curTime - this->dataPtr->lastMsgTime) > .5)
   {
-    this->dataPtr->posePub.Publish(
-        ignition::msgs::Convert(this->dataPtr->model->WorldPose()));
-
     ignition::msgs::Double_V consoleMsg;
-
-    // linearVel (meter/sec) = (2*PI*r) * (rad/sec).
-    double linearVel = (2.0 * IGN_PI * this->dataPtr->flWheelRadius) *
-      ((this->dataPtr->flWheelAngularVelocity +
-        this->dataPtr->frWheelAngularVelocity) * 0.5);
-
-    // Convert meter/sec to miles/hour
-    linearVel *= 2.23694;
-
-    // Distance traveled in miles.
-    this->dataPtr->odom += (fabs(linearVel) * dt/3600);
-
-    // \todo: Actually compute MPG
-    double mpg = 1.0 / std::max(linearVel, 0.0);
 
     // Gear information: 1=drive, 2=reverse, 3=neutral
     if (this->dataPtr->directionState == PriusHybridPluginPrivate::FORWARD)
@@ -959,7 +955,7 @@ void PriusHybridPlugin::Update()
       consoleMsg.add_data(3.0);
 
     // MPH. A speedometer does not go negative.
-    consoleMsg.add_data(std::max(linearVel, 0.0));
+    consoleMsg.add_data(std::max(this->dataPtr->linearVel, 0.0));
 
     // MPG
     consoleMsg.add_data(mpg);
@@ -968,6 +964,13 @@ void PriusHybridPlugin::Update()
     consoleMsg.add_data(this->dataPtr->odom);
 
     this->dataPtr->consolePub.Publish(consoleMsg);
+
+    // Output prius car data.
+    this->dataPtr->posePub.Publish(
+        ignition::msgs::Convert(this->dataPtr->model->WorldPose()));
+
+
+
     this->dataPtr->lastMsgTime = curTime;
   }
 
@@ -980,8 +983,17 @@ void PriusHybridPlugin::Update()
 
     PriusData data;
     data.timestamp = curTime.Double();
-    data.pose = this->dataPtr->model->GetWorldPose().Ign();
-    data.fuelEfficiency= 1;
+    data.odom = this->dataPtr->odom;
+    data.mpg = mpg;
+    data.mph = linearVel;
+
+    if (this->dataPtr->directionState == PriusHybridPluginPrivate::FORWARD)
+      data.gear = "drive";
+    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::REVERSE)
+      data.gear = "reverse";
+    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
+      data.gear = "neutral";
+
     this->dataPtr->dataPoints.push_back(data);
   }
 }
