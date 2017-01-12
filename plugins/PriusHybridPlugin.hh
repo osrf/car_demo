@@ -54,13 +54,17 @@ namespace gazebo
     /// \param[in] _msg Keypress message.
     private: void OnKeyPressIgn(const ignition::msgs::Any &_msg);
 
-    /// \brief Key control type 1
+    /// \brief Key control
     /// \param[in] _key key value
     private: void KeyControl(const int _key);
 
-    /// \brief Key control type 2
+    /// \brief Key control type A
     /// \param[in] _key key value
-    private: void KeyControl2(const int _key);
+    private: void KeyControlTypeA(const int _key);
+
+    /// \brief Key control type B
+    /// \param[in] _key key value
+    private: void KeyControlTypeB(const int _key);
 
 //    private: void OnCmdVel(const ignition::msgs::CmdVel2D &_msg);
     private: void OnCmdVel(const ignition::msgs::Pose &_msg);

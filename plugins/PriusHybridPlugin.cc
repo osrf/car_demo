@@ -250,7 +250,7 @@ namespace gazebo
     public: ignition::math::Pose3d lastModelWorldPose;
 
     /// \brief Keyboard control type
-    public: int keyControl = 1;
+    public: int keyControl = 0;
   };
 }
 
@@ -598,7 +598,7 @@ void PriusHybridPlugin::OnCmdVel(const ignition::msgs::Pose &_msg)
 }
 
 /////////////////////////////////////////////////
-void PriusHybridPlugin::KeyControl(const int _key)
+void PriusHybridPlugin::KeyControlTypeA(const int _key)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
@@ -666,7 +666,7 @@ void PriusHybridPlugin::KeyControl(const int _key)
 
 
 /////////////////////////////////////////////////
-void PriusHybridPlugin::KeyControl2(const int _key)
+void PriusHybridPlugin::KeyControlTypeB(const int _key)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
@@ -730,21 +730,31 @@ void PriusHybridPlugin::KeyControl2(const int _key)
 }
 
 /////////////////////////////////////////////////
+void PriusHybridPlugin::KeyControl(const int _key)
+{
+  // k
+  if (_key == 75 || _key == 107)
+  {
+    this->dataPtr->keyControl = !this->dataPtr->keyControl;
+    return;
+  }
+
+  if (this->dataPtr->keyControl == 0)
+    this->KeyControlTypeA(_key);
+  else if (this->dataPtr->keyControl == 1)
+    this->KeyControlTypeB(_key);
+}
+
+/////////////////////////////////////////////////
 void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
 {
-  if (this->dataPtr->keyControl == 1)
-    this->KeyControlStyle1(_msg->int_value());
-  if (this->dataPtr->keyControl2 == 2)
-    this->KeyControlStyle2(_msg->int_value());
+  this->KeyControl(_msg->int_value());
 }
 
 /////////////////////////////////////////////////
 void PriusHybridPlugin::OnKeyPressIgn(const ignition::msgs::Any &_msg)
 {
-  if (this->dataPtr->keyControl == 1)
-    this->KeyControlStyle1(_msg.int_value());
-  if (this->dataPtr->keyControl2 == 2)
-    this->KeyControlStyle2(_msg.int_value());
+  this->KeyControl(_msg.int_value());
 }
 
 /////////////////////////////////////////////////
