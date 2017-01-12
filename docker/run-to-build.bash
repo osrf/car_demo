@@ -17,8 +17,14 @@ BUILD_DIR=$2
 
 if [ ! -f /tmp/.docker.xauth ]
 then
-  export XAUTH=/tmp/.docker.xauth
-  xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+    export XAUTH=/tmp/.docker.xauth
+    xauth_list=$(xauth nlist :0 | sed -e 's/^..../ffff/')
+    if [ ! -z $xauth_list ]
+    then
+        echo $xauth_list | xauth -f $XAUTH nmerge -
+    else
+        touch /tmp/.docker.xauth
+    fi
 fi
 
 # Use lspci to check for the presence of an nvidia graphics card
