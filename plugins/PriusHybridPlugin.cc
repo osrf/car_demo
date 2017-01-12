@@ -17,6 +17,7 @@
 
 #include <mutex>
 #include <ignition/transport/Node.hh>
+#include <ignition/transport/AdvertiseOptions.hh>
 
 #include "PriusHybridPlugin.hh"
 #include <gazebo/common/PID.hh>
@@ -48,6 +49,12 @@ namespace gazebo
 
     /// \brief Ignition transport node
     public: ignition::transport::Node node;
+
+    /// \brief Ignition transport position pub
+    public: ignition::transport::Node::Publisher posePub;
+
+    /// \brief Ignition transport console pub
+    public: ignition::transport::Node::Publisher consolePub;
 
     /// \brief Physics update event connection
     public: event::ConnectionPtr updateConnection;
@@ -81,6 +88,9 @@ namespace gazebo
 
     /// \brief PID control for steering wheel joint
     public: common::PID handWheelPID;
+
+    /// \brief Last pose msg time
+    public: common::Time lastMsgTime;
 
     /// \brief Last sim time received
     public: common::Time lastSimTime;
@@ -210,6 +220,9 @@ namespace gazebo
 
     /// \brief Mutex to protect updates
     public: std::mutex mutex;
+
+    /// \brief Odometer
+    public: double odom;
   };
 }
 
@@ -245,6 +258,11 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->gznode->Init();
 
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
+
+  this->dataPtr->posePub = this->dataPtr->node.Advertise<ignition::msgs::Pose>(
+      "/prius/pose");
+  this->dataPtr->consolePub =
+    this->dataPtr->node.Advertise<ignition::msgs::Double_V>("/prius/console");
 
   std::string handWheelJointName = this->dataPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("steering_wheel");
@@ -575,6 +593,7 @@ void PriusHybridPlugin::Update()
   {
     // has time been reset?
     this->dataPtr->lastSimTime = curTime;
+    this->dataPtr->lastMsgTime = curTime;
     return;
   }
   else if (ignition::math::equal(dt, 0.0))
@@ -589,18 +608,22 @@ void PriusHybridPlugin::Update()
   this->dataPtr->frSteeringAngle =
       this->dataPtr->frWheelSteeringJoint->Position();
 
-  this->dataPtr->flWheelAngularVelocity = this->dataPtr->flWheelJoint->GetVelocity(1);
-  this->dataPtr->frWheelAngularVelocity = this->dataPtr->frWheelJoint->GetVelocity(1);
-  this->dataPtr->blWheelAngularVelocity = this->dataPtr->blWheelJoint->GetVelocity(0);
-  this->dataPtr->brWheelAngularVelocity = this->dataPtr->brWheelJoint->GetVelocity(0);
+  this->dataPtr->flWheelAngularVelocity =
+    this->dataPtr->flWheelJoint->GetVelocity(1);
+  this->dataPtr->frWheelAngularVelocity =
+    this->dataPtr->frWheelJoint->GetVelocity(1);
+  this->dataPtr->blWheelAngularVelocity =
+    this->dataPtr->blWheelJoint->GetVelocity(0);
+  this->dataPtr->brWheelAngularVelocity =
+    this->dataPtr->brWheelJoint->GetVelocity(0);
 
   this->dataPtr->lastSimTime = curTime;
 
   // PID (position) steering
   this->dataPtr->handWheelCmd =
     ignition::math::clamp(this->dataPtr->handWheelCmd,
-                         -this->dataPtr->maxSteer / this->dataPtr->steeringRatio,
-                          this->dataPtr->maxSteer / this->dataPtr->steeringRatio);
+        -this->dataPtr->maxSteer / this->dataPtr->steeringRatio,
+        this->dataPtr->maxSteer / this->dataPtr->steeringRatio);
   double steerError =
       this->dataPtr->handWheelAngle - this->dataPtr->handWheelCmd;
   double steerCmd = this->dataPtr->handWheelPID.Update(steerError, dt);
@@ -627,17 +650,23 @@ void PriusHybridPlugin::Update()
       this->dataPtr->flSteeringAngle - this->dataPtr->flWheelSteeringCmd;
   double flwsCmd = this->dataPtr->flWheelSteeringPID.Update(flwsError, dt);
   this->dataPtr->flWheelSteeringJoint->SetForce(0, flwsCmd);
-  //this->dataPtr->flWheelSteeringJoint->SetPosition(0, this->dataPtr->flWheelSteeringCmd);
-  //this->dataPtr->flWheelSteeringJoint->SetLowStop(0, this->dataPtr->flWheelSteeringCmd);
-  //this->dataPtr->flWheelSteeringJoint->SetHighStop(0, this->dataPtr->flWheelSteeringCmd);
+  // this->dataPtr->flWheelSteeringJoint->SetPosition(0,
+  // this->dataPtr->flWheelSteeringCmd);
+  // this->dataPtr->flWheelSteeringJoint->SetLowStop(0,
+  // this->dataPtr->flWheelSteeringCmd);
+  // this->dataPtr->flWheelSteeringJoint->SetHighStop(0,
+  // this->dataPtr->flWheelSteeringCmd);
 
   double frwsError =
       this->dataPtr->frSteeringAngle - this->dataPtr->frWheelSteeringCmd;
   double frwsCmd = this->dataPtr->frWheelSteeringPID.Update(frwsError, dt);
   this->dataPtr->frWheelSteeringJoint->SetForce(0, frwsCmd);
-  //this->dataPtr->frWheelSteeringJoint->SetPosition(0, this->dataPtr->frWheelSteeringCmd);
-  //this->dataPtr->frWheelSteeringJoint->SetLowStop(0, this->dataPtr->frWheelSteeringCmd);
-  //this->dataPtr->frWheelSteeringJoint->SetHighStop(0, this->dataPtr->frWheelSteeringCmd);
+  // this->dataPtr->frWheelSteeringJoint->SetPosition(0,
+  // this->dataPtr->frWheelSteeringCmd);
+  // this->dataPtr->frWheelSteeringJoint->SetLowStop(0,
+  // this->dataPtr->frWheelSteeringCmd);
+  // this->dataPtr->frWheelSteeringJoint->SetHighStop(0,
+  // this->dataPtr->frWheelSteeringCmd);
 
   // Gas pedal torque.
   // Map gas torques to individual wheels.
@@ -676,10 +705,14 @@ void PriusHybridPlugin::Update()
 
   brakePercent = ignition::math::clamp(
       brakePercent, this->dataPtr->minBrakePercent, 1.0);
-  this->dataPtr->flWheelJoint->SetParam("friction", 1, brakePercent * this->dataPtr->frontBrakeTorque);
-  this->dataPtr->frWheelJoint->SetParam("friction", 1, brakePercent * this->dataPtr->frontBrakeTorque);
-  this->dataPtr->blWheelJoint->SetParam("friction", 0, brakePercent * this->dataPtr->backBrakeTorque);
-  this->dataPtr->brWheelJoint->SetParam("friction", 0, brakePercent * this->dataPtr->backBrakeTorque);
+  this->dataPtr->flWheelJoint->SetParam("friction", 1,
+      brakePercent * this->dataPtr->frontBrakeTorque);
+  this->dataPtr->frWheelJoint->SetParam("friction", 1,
+      brakePercent * this->dataPtr->frontBrakeTorque);
+  this->dataPtr->blWheelJoint->SetParam("friction", 0,
+      brakePercent * this->dataPtr->backBrakeTorque);
+  this->dataPtr->brWheelJoint->SetParam("friction", 0,
+      brakePercent * this->dataPtr->backBrakeTorque);
 
   this->dataPtr->flWheelJoint->SetForce(1, flGasTorque);
   this->dataPtr->frWheelJoint->SetForce(1, frGasTorque);
@@ -695,9 +728,53 @@ void PriusHybridPlugin::Update()
     this->dataPtr->gasPedalPercent = 0.0;
     this->dataPtr->brakePedalPercent = 0.0;
   }
+
   if ((curTime - this->dataPtr->lastSteeringCmdTime).Double() > 1.0)
   {
     this->dataPtr->handWheelCmd = 0;
+  }
+
+  // Output prius car data.
+  if ((curTime - this->dataPtr->lastMsgTime) > .5)
+  {
+    this->dataPtr->posePub.Publish(
+        ignition::msgs::Convert(this->dataPtr->model->WorldPose()));
+
+    ignition::msgs::Double_V consoleMsg;
+
+    // linearVel (meter/sec) = (2*PI*r) * (rad/sec).
+    double linearVel = (2.0 * IGN_PI * this->dataPtr->flWheelRadius) *
+      ((this->dataPtr->flWheelAngularVelocity +
+        this->dataPtr->frWheelAngularVelocity) * 0.5);
+
+    // Convert meter/sec to miles/hour
+    linearVel *= 2.23694;
+
+    // Distance traveled in miles.
+    this->dataPtr->odom += (fabs(linearVel) * dt/3600);
+
+    // \todo: Actually compute MPG
+    double mpg = 1.0 / std::max(linearVel, 0.0);
+
+    // Gear information: 1=drive, 2=reverse, 3=neutral
+    if (this->dataPtr->directionState == PriusHybridPluginPrivate::FORWARD)
+      consoleMsg.add_data(1.0);
+    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::REVERSE)
+      consoleMsg.add_data(2.0);
+    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
+      consoleMsg.add_data(3.0);
+
+    // MPH. A speedometer does not go negative.
+    consoleMsg.add_data(std::max(linearVel, 0.0));
+
+    // MPG
+    consoleMsg.add_data(mpg);
+
+    // Miles
+    consoleMsg.add_data(this->dataPtr->odom);
+
+    this->dataPtr->consolePub.Publish(consoleMsg);
+    this->dataPtr->lastMsgTime = curTime;
   }
 }
 
@@ -705,10 +782,8 @@ void PriusHybridPlugin::Update()
 void PriusHybridPlugin::UpdateHandWheelRatio()
 {
   // The total range the steering wheel can rotate
-  this->dataPtr->handWheelHigh =
-      this->dataPtr->handWheelJoint->UpperLimit(0);
-  this->dataPtr->handWheelLow =
-      this->dataPtr->handWheelJoint->LowerLimit(0);
+  this->dataPtr->handWheelHigh = this->dataPtr->handWheelJoint->UpperLimit(0);
+  this->dataPtr->handWheelLow = this->dataPtr->handWheelJoint->LowerLimit(0);
   double handWheelRange =
       this->dataPtr->handWheelHigh - this->dataPtr->handWheelLow;
   double high = std::min(
