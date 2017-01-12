@@ -148,10 +148,10 @@ namespace gazebo
     /// \brief Front right wheel steering joint D gain
     public: double fRwheelSteeringDgain = 0;
 
-    /// \brief Front left wheel desired angle (radians)
+    /// \brief Front left wheel desired steering angle (radians)
     public: double flWheelSteeringCmd = 0;
 
-    /// \brief Front right wheel desired angle (radians)
+    /// \brief Front right wheel desired steering angle (radians)
     public: double frWheelSteeringCmd = 0;
 
     /// \brief Steering wheel desired angle (radians)
