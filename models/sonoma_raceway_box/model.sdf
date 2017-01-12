@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="sonoma_raceway_box">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>450 1300 0.5</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>450 1300 0.5</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://sonoma_raceway_box/materials/scripts</uri>
+            <uri>model://sonoma_raceway_box/materials/textures</uri>
+            <name>SonomaRaceway</name>
+          </script>
+        </material>
+      </visual>
+
+    </link>
+  </model>
+</sdf>
