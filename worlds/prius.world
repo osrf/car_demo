@@ -60,13 +60,14 @@
 
 
       <plugin name='priusHybrid' filename='libPriusHybridPlugin.so'>
-        <front_left_wheel>prius_hybrid::front_left_wheel_joint</front_left_wheel>
-        <front_right_wheel>prius_hybrid::front_right_wheel_joint</front_right_wheel>
-        <front_left_wheel_steering>prius_hybrid::front_left_steering_joint</front_left_wheel_steering>
-        <front_right_wheel_steering>prius_hybrid::front_right_steering_joint</front_right_wheel_steering>
+        <front_left_wheel>prius_hybrid::front_left_combined_joint</front_left_wheel>
+        <front_right_wheel>prius_hybrid::front_right_combined_joint</front_right_wheel>
+        <front_left_wheel_steering>prius_hybrid::front_left_combined_joint</front_left_wheel_steering>
+        <front_right_wheel_steering>prius_hybrid::front_right_combined_joint</front_right_wheel_steering>
         <back_left_wheel>prius_hybrid::rear_left_wheel_joint</back_left_wheel>
         <back_right_wheel>prius_hybrid::rear_right_wheel_joint</back_right_wheel>
         <steering_wheel>prius_hybrid::steering_joint</steering_wheel>
+        <rolling_resistance_percent>0.014</rolling_resistance_percent>
         <front_torque>1000</front_torque>
         <back_torque>0</back_torque>
         <front_brake_torque>2000</front_brake_torque>
