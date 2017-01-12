@@ -137,6 +137,44 @@
       </collision>
     </link>
 
+    <link name="steering_wheel">
+      <pose>0.44 -0.717609 0.938807 -0.87 0 0</pose>
+      <inertial>
+        <mass>1.0</mass>
+        <inertia>
+          <ixx>0.14583300</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.14583300</iyy>
+          <iyz>0</iyz>
+          <izz>0.12500000</izz>
+        </inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry>
+          <cylinder>
+            <radius>0.16</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <min_depth>0.003</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <cylinder>
+            <radius>0.16</radius>
+            <length>0.01</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
     <link name="front_left_wheel">
       <pose>0.767 -1.41 0.3 0 0 0</pose>
       <inertial>
@@ -192,45 +230,6 @@
 
       </collision>
     </link>
-
-    <link name="steering_wheel">
-      <pose>0.44 -0.717609 0.938807 -0.87 0 0</pose>
-      <inertial>
-        <mass>1.0</mass>
-        <inertia>
-          <ixx>0.14583300</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>0.14583300</iyy>
-          <iyz>0</iyz>
-          <izz>0.12500000</izz>
-        </inertia>
-      </inertial>
-      <collision name="collision">
-        <geometry>
-          <cylinder>
-            <radius>0.16</radius>
-            <length>0.01</length>
-          </cylinder>
-        </geometry>
-        <surface>
-          <contact>
-            <ode>
-              <min_depth>0.003</min_depth>
-            </ode>
-          </contact>
-        </surface>
-      </collision>
-      <visual name="visual">
-        <geometry>
-          <cylinder>
-            <radius>0.16</radius>
-            <length>0.01</length>
-          </cylinder>
-        </geometry>
-      </visual>
-    </link>
-
 
     <link name="front_right_wheel">
       <pose>-0.767 -1.41 0.3 0 0 0</pose>
