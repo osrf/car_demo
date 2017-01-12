@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
+<%
+  # 2016 Toyota Prius with rigid suspension, front steering
+  # Consists of chassis with 2 steerable and 2 non-steerable wheels
+  # SI units (length in meters)
+
+  # Wheel parameters
+  wheel_radius = 0.31265
+  wheel_min_depth = 0.015
+  wheel_kp = "1e7"
+%>
 <sdf version="1.6">
   <model name="prius_hybrid">
     <pose>0 0 0.03 0 0 0</pose>
@@ -207,7 +217,7 @@
         <pose>-0.07 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
-            <radius>0.31265</radius>
+            <radius><%= wheel_radius %></radius>
             <!--length>0.215</length-->
           </sphere>
         </geometry>
@@ -222,8 +232,8 @@
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
+              <min_depth><%= wheel_min_depth %></min_depth>
+              <kp><%= wheel_kp %></kp>
             </ode>
           </contact>
         </surface>
@@ -262,7 +272,7 @@
         <pose>0.07 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
-            <radius>0.31265</radius>
+            <radius><%= wheel_radius %></radius>
             <!--length>0.215</length-->
           </sphere>
         </geometry>
@@ -277,8 +287,8 @@
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
+              <min_depth><%= wheel_min_depth %></min_depth>
+              <kp><%= wheel_kp %></kp>
             </ode>
           </contact>
         </surface>
@@ -319,7 +329,7 @@
         <pose>-0.07 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
-            <radius>0.31265</radius>
+            <radius><%= wheel_radius %></radius>
             <!--length>0.215</length-->
           </sphere>
         </geometry>
@@ -334,8 +344,8 @@
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
+              <min_depth><%= wheel_min_depth %></min_depth>
+              <kp><%= wheel_kp %></kp>
             </ode>
           </contact>
         </surface>
@@ -374,7 +384,7 @@
         <pose>0.07 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
-            <radius>0.31265</radius>
+            <radius><%= wheel_radius %></radius>
             <!--length>0.215</length-->
           </sphere>
         </geometry>
@@ -389,8 +399,8 @@
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
+              <min_depth><%= wheel_min_depth %></min_depth>
+              <kp><%= wheel_kp %></kp>
             </ode>
           </contact>
         </surface>
