@@ -31,19 +31,24 @@ At the end of this step there will be a docker image called **precious** that
 - can be deployed to AWS or tested locally
 
 ___
-1. Create a folder called *docker_build* somewhere on the file system
-2. Create a folder called *docker_src* somewhere on the file system
-    1. Either `hg clone` or `ln -s` the following repositories into *docker_src* such that`ls docker_src` shows
-    ```
-    gazebo  ign-common  ign-core  ign-math  ign-msgs  ign-transport  priuscup  sdformat
-    ```
-3. Run the following script to launch the **precious-base** image created earlier
+1. Create a folder called *docker_build/*
+2. Create a folder called *docker_src/*
+    1. Use mercurial to clone the following repositories inside *docker_src/*
+    	- https://bitbucket.org/osrf/gazebo
+    	- https://bitbucket.org/osrf/sdformat
+    	- https://bitbucket.org/ignitionrobotics/ign-common
+    	- https://bitbucket.org/ignitionrobotics/ign-core
+    	- https://bitbucket.org/ignitionrobotics/ign-math
+    	- https://bitbucket.org/ignitionrobotics/ign-msgs
+    	- https://bitbucket.org/ignitionrobotics/ign-transport
+    	- https://bitbucket.org/osrf/priuscup
+3. It is time to launch the **precious-base** image created earlier
 `./run-to-build.bash path/to/docker_src path/to/docker_build`
 	1. Inside the container there are three important folders:
-		1. */src_rw* - The contents of docker_src
-		2. */src* - Same as above, but read-only
-		3. */build* - The contents of docker_build
-	2. Run the following script to call `cmake`, `make`, and `make install` on all the right branches
+		1. */src_rw* - links to *docker_src/*
+		2. */src* - links to *docker_src/* (read-only)
+		3. */build* - links to *docker_build/*
+	2. Either build and install all repos in */src* manually **OR** Run this script
 	`/src/priuscup/docker/build-pc.bash`
 	**Don't exit the container yet!** 
 4. Save the container as a new docker image
