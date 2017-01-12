@@ -608,10 +608,14 @@ void PriusHybridPlugin::Update()
   this->dataPtr->frSteeringAngle =
       this->dataPtr->frWheelSteeringJoint->Position();
 
-  this->dataPtr->flWheelAngularVelocity = this->dataPtr->flWheelJoint->GetVelocity(1);
-  this->dataPtr->frWheelAngularVelocity = this->dataPtr->frWheelJoint->GetVelocity(1);
-  this->dataPtr->blWheelAngularVelocity = this->dataPtr->blWheelJoint->GetVelocity(0);
-  this->dataPtr->brWheelAngularVelocity = this->dataPtr->brWheelJoint->GetVelocity(0);
+  this->dataPtr->flWheelAngularVelocity =
+    this->dataPtr->flWheelJoint->GetVelocity(1);
+  this->dataPtr->frWheelAngularVelocity =
+    this->dataPtr->frWheelJoint->GetVelocity(1);
+  this->dataPtr->blWheelAngularVelocity =
+    this->dataPtr->blWheelJoint->GetVelocity(0);
+  this->dataPtr->brWheelAngularVelocity =
+    this->dataPtr->brWheelJoint->GetVelocity(0);
 
   this->dataPtr->lastSimTime = curTime;
 
@@ -740,7 +744,8 @@ void PriusHybridPlugin::Update()
 
     // linearVel (meter/sec) = (2*PI*r) * (rad/sec).
     double linearVel = (2.0 * IGN_PI * this->dataPtr->flWheelRadius) *
-      ((this->dataPtr->flWheelState + this->dataPtr->frWheelState) * 0.5);
+      ((this->dataPtr->flWheelAngularVelocity +
+        this->dataPtr->frWheelAngularVelocity) * 0.5);
 
     // Convert meter/sec to miles/hour
     linearVel *= 2.23694;
