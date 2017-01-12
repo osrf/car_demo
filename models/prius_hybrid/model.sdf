@@ -5,7 +5,7 @@
     <link name="chassis">
       <inertial>
         <mass>1356.0</mass>
-        <pose>0 0 0.7366 0 0 0</pose>
+        <pose>0 0 0.55 0 0 0</pose>
         <inertia>
           <ixx>2581.13354740</ixx>
           <ixy>0.0</ixy>
