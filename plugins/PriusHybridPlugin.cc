@@ -128,7 +128,7 @@ namespace gazebo
     public: double handWheelForce = 0;
 
     /// \brief Max force that can be applied to wheel steering joints
-    public: double steeredWheelForce= 0;
+    public: const double kMaxSteeringForceMagnitude= 5000;
 
     /// \brief Front left wheel steering joint P gain
     public: double fLwheelSteeringPgain = 0;
@@ -148,13 +148,13 @@ namespace gazebo
     /// \brief Front right wheel steering joint D gain
     public: double fRwheelSteeringDgain = 0;
 
-    /// \brief Front left wheel steering command
+    /// \brief Front left wheel desired angle (radians)
     public: double flWheelSteeringCmd = 0;
 
-    /// \brief Front right wheel steering command
+    /// \brief Front right wheel desired angle (radians)
     public: double frWheelSteeringCmd = 0;
 
-    /// \brief Steering wheel command
+    /// \brief Steering wheel desired angle (radians)
     public: double handWheelCmd = 0;
 
     /// \brief Front left wheel radius
@@ -184,26 +184,26 @@ namespace gazebo
     /// \brief Brake pedal position in percentage. 1.0 =
     public: double brakePedalPercent = 0;
 
-    /// \brief Angle state of hand steering wheel joint
-    public: double handWheelState = 0;
+    /// \brief Angle of steering wheel at last update (radians)
+    public: double handWheelAngle = 0;
 
-    /// \brief Angle state of front left wheel steering joint
-    public: double flSteeringState = 0;
+    /// \brief Steering angle of front left wheel at last update (radians)
+    public: double flSteeringAngle = 0;
 
-    /// \brief Angle state of front right wheel steering joint
-    public: double frSteeringState = 0;
+    /// \brief Steering angle of front right wheel at last update (radians)
+    public: double frSteeringAngle = 0;
 
-    /// \brief Angle state of front left wheel joint
-    public: double flWheelState = 0;
+    /// \brief Angular velocity of front left wheel at last update (rad/s)
+    public: double flWheelAngularVelocity = 0;
 
-    /// \brief Angle state of front right wheel joint
-    public: double frWheelState = 0;
+    /// \brief Angular velocity of front right wheel at last update (rad/s)
+    public: double frWheelAngularVelocity = 0;
 
-    /// \brief Angle state of rear left wheel joint
-    public: double blWheelState = 0;
+    /// \brief Angular velocity of back left wheel at last update (rad/s)
+    public: double blWheelAngularVelocity = 0;
 
-    /// \brief Angle state of rear right wheel joint
-    public: double brWheelState = 0;
+    /// \brief Angular velocity of back right wheel at last update (rad/s)
+    public: double brWheelAngularVelocity = 0;
 
     /// \brief Subscriber to the keyboard topic
     public: transport::SubscriberPtr keyboardSub;
@@ -220,7 +220,6 @@ PriusHybridPlugin::PriusHybridPlugin()
     : dataPtr(new PriusHybridPluginPrivate)
 {
   this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
-  this->dataPtr->steeredWheelForce = 5000;
   this->dataPtr->handWheelForce = 1;
   this->dataPtr->flWheelRadius = 0.3;
   this->dataPtr->frWheelRadius = 0.3;
@@ -473,13 +472,13 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->flWheelSteeringPID.Init(this->dataPtr->fLwheelSteeringPgain,
       this->dataPtr->fLwheelSteeringIgain,
       this->dataPtr->fLwheelSteeringDgain,
-      0, 0, this->dataPtr->steeredWheelForce,
-      -this->dataPtr->steeredWheelForce);
+      0, 0, this->dataPtr->kMaxSteeringForceMagnitude,
+      -this->dataPtr->kMaxSteeringForceMagnitude);
   this->dataPtr->frWheelSteeringPID.Init(this->dataPtr->fRwheelSteeringPgain,
       this->dataPtr->fRwheelSteeringIgain,
       this->dataPtr->fRwheelSteeringDgain,
-      0, 0, this->dataPtr->steeredWheelForce,
-      -this->dataPtr->steeredWheelForce);
+      0, 0, this->dataPtr->kMaxSteeringForceMagnitude,
+      -this->dataPtr->kMaxSteeringForceMagnitude);
 
 
   this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
@@ -494,7 +493,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 void PriusHybridPlugin::OnCmdVel(const ignition::msgs::CmdVel2D &_msg)
 {
   this->dataPtr->gasPedalPercent = std::min(_msg.velocity(), 1.0);
-  this->dataPtr->handWheelCmd = this->dataPtr->handWheelState + _msg.theta();
+  this->dataPtr->handWheelCmd = this->dataPtr->handWheelAngle + _msg.theta();
 
   this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
   this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
@@ -583,17 +582,17 @@ void PriusHybridPlugin::Update()
     return;
   }
 
-  this->dataPtr->handWheelState =
+  this->dataPtr->handWheelAngle =
       this->dataPtr->handWheelJoint->Position();
-  this->dataPtr->flSteeringState =
+  this->dataPtr->flSteeringAngle =
       this->dataPtr->flWheelSteeringJoint->Position();
-  this->dataPtr->frSteeringState =
+  this->dataPtr->frSteeringAngle =
       this->dataPtr->frWheelSteeringJoint->Position();
 
-  this->dataPtr->flWheelState = this->dataPtr->flWheelJoint->GetVelocity(1);
-  this->dataPtr->frWheelState = this->dataPtr->frWheelJoint->GetVelocity(1);
-  this->dataPtr->blWheelState = this->dataPtr->blWheelJoint->GetVelocity(0);
-  this->dataPtr->brWheelState = this->dataPtr->brWheelJoint->GetVelocity(0);
+  this->dataPtr->flWheelAngularVelocity = this->dataPtr->flWheelJoint->GetVelocity(1);
+  this->dataPtr->frWheelAngularVelocity = this->dataPtr->frWheelJoint->GetVelocity(1);
+  this->dataPtr->blWheelAngularVelocity = this->dataPtr->blWheelJoint->GetVelocity(0);
+  this->dataPtr->brWheelAngularVelocity = this->dataPtr->brWheelJoint->GetVelocity(0);
 
   this->dataPtr->lastSimTime = curTime;
 
@@ -603,7 +602,7 @@ void PriusHybridPlugin::Update()
                          -this->dataPtr->maxSteer / this->dataPtr->steeringRatio,
                           this->dataPtr->maxSteer / this->dataPtr->steeringRatio);
   double steerError =
-      this->dataPtr->handWheelState - this->dataPtr->handWheelCmd;
+      this->dataPtr->handWheelAngle - this->dataPtr->handWheelCmd;
   double steerCmd = this->dataPtr->handWheelPID.Update(steerError, dt);
   this->dataPtr->handWheelJoint->SetForce(0, steerCmd);
   //this->dataPtr->handWheelJoint->SetPosition(0, this->dataPtr->handWheelCmd);
@@ -621,11 +620,11 @@ void PriusHybridPlugin::Update()
   this->dataPtr->frWheelSteeringCmd = atan2(tanSteer,
       1 + this->dataPtr->frontTrackWidth/2/this->dataPtr->wheelbaseLength *
       tanSteer);
-  // this->flWheelSteeringCmd = this->handWheelState * this->steeringRatio;
-  // this->frWheelSteeringCmd = this->handWheelState * this->steeringRatio;
+  // this->flWheelSteeringCmd = this->handWheelAngle * this->steeringRatio;
+  // this->frWheelSteeringCmd = this->handWheelAngle * this->steeringRatio;
 
   double flwsError =
-      this->dataPtr->flSteeringState - this->dataPtr->flWheelSteeringCmd;
+      this->dataPtr->flSteeringAngle - this->dataPtr->flWheelSteeringCmd;
   double flwsCmd = this->dataPtr->flWheelSteeringPID.Update(flwsError, dt);
   this->dataPtr->flWheelSteeringJoint->SetForce(0, flwsCmd);
   //this->dataPtr->flWheelSteeringJoint->SetPosition(0, this->dataPtr->flWheelSteeringCmd);
@@ -633,7 +632,7 @@ void PriusHybridPlugin::Update()
   //this->dataPtr->flWheelSteeringJoint->SetHighStop(0, this->dataPtr->flWheelSteeringCmd);
 
   double frwsError =
-      this->dataPtr->frSteeringState - this->dataPtr->frWheelSteeringCmd;
+      this->dataPtr->frSteeringAngle - this->dataPtr->frWheelSteeringCmd;
   double frwsCmd = this->dataPtr->frWheelSteeringPID.Update(frwsError, dt);
   this->dataPtr->frWheelSteeringJoint->SetForce(0, frwsCmd);
   //this->dataPtr->frWheelSteeringJoint->SetPosition(0, this->dataPtr->frWheelSteeringCmd);
@@ -652,17 +651,17 @@ void PriusHybridPlugin::Update()
   double flGasTorque = 0, frGasTorque = 0, blGasTorque = 0, brGasTorque = 0;
   // Apply equal torque at left and right wheels, which is an implicit model
   // of the differential.
-  if ((fabs(this->dataPtr->flWheelState * this->dataPtr->flWheelRadius) <
+  if ((fabs(this->dataPtr->flWheelAngularVelocity * this->dataPtr->flWheelRadius) <
       this->dataPtr->maxSpeed)
-      && (fabs(this->dataPtr->frWheelState * this->dataPtr->frWheelRadius) <
+      && (fabs(this->dataPtr->frWheelAngularVelocity * this->dataPtr->frWheelRadius) <
       this->dataPtr->maxSpeed))
   {
     flGasTorque = gasPercent*this->dataPtr->frontTorque * gasMultiplier;
     frGasTorque = gasPercent*this->dataPtr->frontTorque * gasMultiplier;
   }
-  if ((fabs(this->dataPtr->blWheelState * this->dataPtr->blWheelRadius) <
+  if ((fabs(this->dataPtr->blWheelAngularVelocity * this->dataPtr->blWheelRadius) <
       this->dataPtr->maxSpeed)
-      && (fabs(this->dataPtr->brWheelState * this->dataPtr->brWheelRadius) <
+      && (fabs(this->dataPtr->brWheelAngularVelocity * this->dataPtr->brWheelRadius) <
       this->dataPtr->maxSpeed))
   {
     blGasTorque = gasPercent * this->dataPtr->backTorque * gasMultiplier;
