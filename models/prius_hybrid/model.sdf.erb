@@ -6,8 +6,12 @@
 
   # Wheel parameters
   wheel_radius = 0.31265
+  wheel_width = 0.215
   wheel_min_depth = 0.015
   wheel_kp = "1e7"
+  # ensure understeer with more friction at rear
+  wheel_friction_front = 0.9
+  wheel_friction_rear = 1.1
 %>
 <sdf version="1.6">
   <model name="prius_hybrid">
@@ -218,14 +222,13 @@
         <geometry>
           <sphere>
             <radius><%= wheel_radius %></radius>
-            <!--length>0.215</length-->
           </sphere>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>0.9</mu>
-              <mu2>0.9</mu2>
+              <mu><%= wheel_friction_front %></mu>
+              <mu2><%= wheel_friction_front %></mu2>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>
@@ -273,14 +276,13 @@
         <geometry>
           <sphere>
             <radius><%= wheel_radius %></radius>
-            <!--length>0.215</length-->
           </sphere>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>0.9</mu>
-              <mu2>0.9</mu2>
+              <mu><%= wheel_friction_front %></mu>
+              <mu2><%= wheel_friction_front %></mu2>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>
@@ -330,14 +332,13 @@
         <geometry>
           <sphere>
             <radius><%= wheel_radius %></radius>
-            <!--length>0.215</length-->
           </sphere>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>1.1</mu>
-              <mu2>1.1</mu2>
+              <mu><%= wheel_friction_rear %></mu>
+              <mu2><%= wheel_friction_rear %></mu2>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>
@@ -385,14 +386,13 @@
         <geometry>
           <sphere>
             <radius><%= wheel_radius %></radius>
-            <!--length>0.215</length-->
           </sphere>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>1.1</mu>
-              <mu2>1.1</mu2>
+              <mu><%= wheel_friction_rear %></mu>
+              <mu2><%= wheel_friction_rear %></mu2>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>

@@ -209,7 +209,6 @@
         <geometry>
           <sphere>
             <radius>0.31265</radius>
-            <!--length>0.215</length-->
           </sphere>
         </geometry>
         <surface>
@@ -264,7 +263,6 @@
         <geometry>
           <sphere>
             <radius>0.31265</radius>
-            <!--length>0.215</length-->
           </sphere>
         </geometry>
         <surface>
@@ -321,7 +319,6 @@
         <geometry>
           <sphere>
             <radius>0.31265</radius>
-            <!--length>0.215</length-->
           </sphere>
         </geometry>
         <surface>
@@ -376,7 +373,6 @@
         <geometry>
           <sphere>
             <radius>0.31265</radius>
-            <!--length>0.215</length-->
           </sphere>
         </geometry>
         <surface>
