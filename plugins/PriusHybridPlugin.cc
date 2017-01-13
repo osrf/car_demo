@@ -304,8 +304,12 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->gznode = transport::NodePtr(new transport::Node());
   this->dataPtr->gznode->Init();
 
+  this->dataPtr->node.Subscribe("/prius/reset",
+      &PriusHybridPlugin::OnReset, this);
+
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
-  this->dataPtr->node.Subscribe("/cmd_gear", &PriusHybridPlugin::OnCmdGear, this);
+  this->dataPtr->node.Subscribe("/cmd_gear",
+      &PriusHybridPlugin::OnCmdGear, this);
 
   this->dataPtr->posePub = this->dataPtr->node.Advertise<ignition::msgs::Pose>(
       "/prius/pose");
@@ -807,6 +811,13 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
 void PriusHybridPlugin::OnKeyPressIgn(const ignition::msgs::Any &_msg)
 {
   this->KeyControl(_msg.int_value());
+}
+
+/////////////////////////////////////////////////
+void PriusHybridPlugin::OnReset(const ignition::msgs::Any & /*_msg*/)
+{
+  this->dataPtr->odom = 0;
+  this->dataPtr->world->Reset();
 }
 
 /////////////////////////////////////////////////
