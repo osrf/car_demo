@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 # launch docker container, providing env and options
 
+
+extra_opts=""
+cmd=""
+if [ "--debug" = $1 ]
+then
+    # make it easy to run gdb inside the container
+    extra_opts="-it --security-opt seccomp=unconfined"
+    cmd=bash
+fi
+
 until sudo nvidia-docker ps
 do
     echo "Waiting for docker server"
@@ -25,7 +35,7 @@ then
 fi
 
 # Display is hard-coded to :0 because that's what the startup scripts on AWS will generate
-sudo nvidia-docker run \
+eval sudo nvidia-docker run \
   -e DISPLAY=unix:0 \
   -e XAUTHORITY=/tmp/.docker.xauth \
   -v "/tmp/.docker.xauth:/tmp/.docker.xauth" \
@@ -34,4 +44,4 @@ sudo nvidia-docker run \
   -v "$code_dir:/code:ro" \
   -p 4000:4000 \
   -p 80:8080 \
-  precious:latest
+  $extra_opts precious:latest $cmd

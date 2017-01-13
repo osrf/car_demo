@@ -4,6 +4,13 @@ FROM cloudsim-sim-base:xenial
 #   1) installs nightly version of gazebo/sdformat, ignition libraries
 #   2) clean build of all prius cup software
 
+# Tools
+RUN apt-get update \
+ && apt-get install -y \
+    gdb \
+ && apt-get clean
+
+
 # Get stable dependencies first
 RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list \
  && wget http://packages.osrfoundation.org/gazebo.key -O - | apt-key add - \
@@ -21,15 +28,15 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_releas
 
 
 # Install nightly build of gazebo8
-RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-nightly `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-nightly.list \
- && apt-get update \
- && apt-get install -y \
-    gazebo8 \
-    gazebo8-common \
-    gazebo8-plugin-base \
-    libgazebo8 \
-    libgazebo8-dev \
- && apt-get clean
+# RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-nightly `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-nightly.list \
+#  && apt-get update \
+#  && apt-get install -y \
+#     gazebo8 \
+#     gazebo8-common \
+#     gazebo8-plugin-base \
+#     libgazebo8 \
+#     libgazebo8-dev \
+#  && apt-get clean
 
 
 # copy datafiles related to the prius cup
@@ -55,26 +62,26 @@ WORKDIR /opt/priuscup
 # Install priuscup source code from repos
 ARG ssh_key
 RUN mkdir /tmp/code \
- && mkdir -p ~/.ssh \
  && echo ${ssh_key} > /tmp/code/ssh_key.b64 \
  && base64 --decode /tmp/code/ssh_key.b64 > /tmp/code/ssh_key \
- && echo ${public_ssh_key} > /tmp/code/ssh_key.pub \
  && chmod 700 /tmp/code/ssh_key \
- && chmod 700 /tmp/code/ssh_key.pub \
  && printf '[ui]\nssh = ssh -o StrictHostKeyChecking=no -C -i /tmp/code/ssh_key ' > /tmp/code/hgrc \
  && export HGRCPATH=/tmp/code/hgrc \
  && cd /tmp/code \
  && hg clone ssh://hg@bitbucket.org/ignitionrobotics/ign-msgs -r precious \
- && mkdir build-ign-msgs && cd build-ign-msgs && cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr /tmp/code/ign-msgs && make -j8 && sudo make install \
+ && mkdir build-ign-msgs && cd build-ign-msgs && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=/usr /tmp/code/ign-msgs && make -j8 && sudo make install \
  && cd /tmp/code \
  && hg clone ssh://hg@bitbucket.org/ignitionrobotics/ign-common -r default \
- && mkdir build-ign-common && cd build-ign-common && cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr /tmp/code/ign-common && make -j8 && sudo make install \
+ && mkdir build-ign-common && cd build-ign-common && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=/usr /tmp/code/ign-common && make -j8 && sudo make install \
  && cd /tmp/code \
  && hg clone ssh://hg@bitbucket.org/ignitionrobotics/ign-core -r precious \
- && mkdir build-ign-core && cd build-ign-core && cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr /tmp/code/ign-core && sudo make -j8 && sudo make install \
+ && mkdir build-ign-core && cd build-ign-core && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=/usr /tmp/code/ign-core && sudo make -j8 && sudo make install \
+ && cd /tmp/code \
+ && hg clone ssh://hg@bitbucket.org/osrf/gazebo -r gazebo8 \
+ && mkdir build-gazebo && cd build-gazebo && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=/usr /tmp/code/gazebo && make -j8 && sudo make install \
  && cd /tmp/code \
  && hg clone ssh://hg@bitbucket.org/osrf/priuscup -r precious \
- && mkdir build-priuscup && cd build-priuscup && cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr /tmp/code/priuscup && make -j8 && sudo make install \
+ && mkdir build-priuscup && cd build-priuscup && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=/usr /tmp/code/priuscup && make -j8 && sudo make install \
  && sudo rm -rf /tmp/code
 
 
