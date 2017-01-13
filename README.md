@@ -7,53 +7,29 @@ These steps will walk through creating a docker image for PriusCup.
 1. [Install docker](https://docs.docker.com/engine/installation/)
 2. [Install nvidia-docker](https://github.com/NVIDIA/nvidia-docker/wiki/Installation)
 
-### Step 1 - Make precious-base
-At the end of this step there will be a docker image called **precious-base** that has
+### Step 1 - Build simulation-base
 
-- all depencencies except sdformat, gazebo, and ignition libraries
-- a folder */priuscup* with
-    - cloudsim-sim
-    - entry.bash
-
----
-1. Download the ssh key to be used on the machine. Zip it, and save the archive as *cloudsim.pem.zip*  in the folder *priuscup/docker*
-2. Run the following script to build a docker image
 ```
-cd priuscup/docker
-./build-base.bash
+cd priuscup/docker/simulation-base
+./build.bash
 ```
-###### Note: This image builds from [sloretz/dev:gz-base](https://bitbucket.org/sloretz/dev_docker)
 
-### Step 2 - Install Priuscup software
-At the end of this step there will be a docker image called **precious** that
+### Step 2 - Build cloudsim-sim-base
+```
+cd priuscup/docker/cloudsim-sim-base
+./build.bash
+```
 
-- has all gazebo, sdformat, ignition, and PriusCup software installed to */usr/local*
-- can be deployed to AWS or tested locally
-
-___
-1. Create a folder called *docker_build/*
-2. Create a folder called *docker_src/*
-    1. Use mercurial to clone the following repositories inside *docker_src/*
-    	- https://bitbucket.org/osrf/gazebo
-    	- https://bitbucket.org/osrf/sdformat
-    	- https://bitbucket.org/ignitionrobotics/ign-common
-    	- https://bitbucket.org/ignitionrobotics/ign-core
-    	- https://bitbucket.org/ignitionrobotics/ign-math
-    	- https://bitbucket.org/ignitionrobotics/ign-msgs
-    	- https://bitbucket.org/ignitionrobotics/ign-transport
-    	- https://bitbucket.org/osrf/priuscup
-3. It is time to launch the **precious-base** image created earlier
-`./run-to-build.bash path/to/docker_src path/to/docker_build`
-	1. Inside the container there are three important folders:
-		1. */src_rw* - links to *docker_src/*
-		2. */src* - links to *docker_src/* (read-only)
-		3. */build* - links to *docker_build/*
-	2. Either build and install all repos in */src* manually **OR** Run this script
-	`/src/priuscup/docker/build-pc.bash`
-	**Don't exit the container yet!** 
-4. Save the container as a new docker image
-	1. Use `sudo docker ps` to get the container id
-	2. Use `sudo docker commit container_id precious:latest` to save the container as precious latest
+### Step 3 - Build precious
+```
+cd priuscup/docker/precious
+./build.bash
+```
+1. This script will output a public ssh key. Add this key to your bitbucket account.
+2. Tag the output image to `precious:latest`
+```
+sudo docker tag precious:2017_Jan_12_1914 precious:latest
+```
 	
 ## Testing Locally
 1. Start the docker image

@@ -34,5 +34,4 @@ sudo nvidia-docker run \
   -v "$code_dir:/code:ro" \
   -p 4000:4000 \
   -p 80:8080 \
-  precious \
-  /priuscup/entry.bash
+  precious:latest
