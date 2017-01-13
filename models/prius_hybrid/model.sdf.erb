@@ -12,13 +12,24 @@
   # ensure understeer with more friction at rear
   wheel_friction_front = 0.9
   wheel_friction_rear = 1.1
+
+  # inertial properties
+  masses = {
+    :chassis => 1356.0,
+    :steering_wheel => 1.0,
+    :front_left_wheel => 11,
+    :front_right_wheel => 11,
+    :rear_left_wheel => 11,
+    :rear_right_wheel => 11,
+  }
+  mass = masses.values.inject(0.0, :+)
 %>
 <sdf version="1.6">
   <model name="prius_hybrid">
     <pose>0 0 0.03 0 0 0</pose>
     <link name="chassis">
       <inertial>
-        <mass>1356.0</mass>
+        <mass><%= masses[:chassis] %></mass>
         <pose>0 0 0.48 0 0 0</pose>
         <inertia>
           <ixx>2581.13354740</ixx>
@@ -154,7 +165,7 @@
     <link name="steering_wheel">
       <pose>0.44 -0.717609 0.938807 -0.87 0 0</pose>
       <inertial>
-        <mass>1.0</mass>
+        <mass><%= masses[:steering_wheel] %></mass>
         <inertia>
           <ixx>0.14583300</ixx>
           <ixy>0</ixy>
@@ -192,7 +203,7 @@
     <link name="front_left_wheel">
       <pose>0.767 -1.41 0.3 0 0 0</pose>
       <inertial>
-        <mass>11</mass>
+        <mass><%= masses[:front_left_wheel] %></mass>
         <inertia>
           <ixx>0.58631238</ixx>
           <ixy>0.0</ixy>
@@ -247,7 +258,7 @@
     <link name="front_right_wheel">
       <pose>-0.767 -1.41 0.3 0 0 0</pose>
       <inertial>
-        <mass>11</mass>
+        <mass><%= masses[:front_right_wheel] %></mass>
         <inertia>
           <ixx>0.58631238</ixx>
           <ixy>0.0</ixy>
@@ -302,7 +313,7 @@
     <link name="rear_left_wheel">
       <pose>0.793 1.45 0.3 0 0 0</pose>
       <inertial>
-        <mass>11</mass>
+        <mass><%= masses[:rear_right_wheel] %></mass>
         <inertia>
           <ixx>0.58631238</ixx>
           <ixy>0.0</ixy>
@@ -357,7 +368,7 @@
     <link name="rear_right_wheel">
       <pose>-0.793 1.45 0.3 0 0 0</pose>
       <inertial>
-        <mass>11</mass>
+        <mass><%= masses[:rear_left_wheel] %></mass>
         <inertia>
           <ixx>0.58631238</ixx>
           <ixy>0.0</ixy>
