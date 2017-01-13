@@ -66,8 +66,12 @@ namespace gazebo
     /// \param[in] _key key value
     private: void KeyControlTypeB(const int _key);
 
-//    private: void OnCmdVel(const ignition::msgs::CmdVel2D &_msg);
+    /// \param[in] _msg Pose message
     private: void OnCmdVel(const ignition::msgs::Pose &_msg);
+
+    /// \brief Command to change gear to reverse, neutral or forward (drive)
+    /// \param[in] _msg Int32 message data
+    private: void OnCmdGear(const ignition::msgs::Int32 &_msg);
 
     /// \brief Update on every time step
     private: void Update();
