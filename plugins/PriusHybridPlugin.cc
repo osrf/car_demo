@@ -916,13 +916,8 @@ void PriusHybridPlugin::Update()
     this->dataPtr->handWheelCmd = 0;
   }
 
-  // linearVel (meter/sec) = (2*PI*r) * (rad/sec).
-  double linearVel = (2.0 * IGN_PI * this->dataPtr->blWheelRadius) *
-    ((this->dataPtr->blWheelAngularVelocity +
-      this->dataPtr->brWheelAngularVelocity) * 0.5);
-
   // Convert meter/sec to miles/hour
-  linearVel *= 2.23694;
+  double linearVel = this->dataPtr->model->WorldLinearVel().Length() * 2.23694;
 
   // Distance traveled in miles.
   this->dataPtr->odom += (fabs(linearVel) * dt/3600.0);
