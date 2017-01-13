@@ -608,8 +608,6 @@ void PriusHybridPlugin::OnCmdGear(const ignition::msgs::Int32 &_msg)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
-  std::cerr << " cmd gear " << _msg.data() << std::endl;
-
   // -1 reverse, 0 neutral, 1 forward
   int state = static_cast<int>(this->dataPtr->directionState);
   state += _msg.data();
