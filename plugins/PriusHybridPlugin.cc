@@ -104,9 +104,6 @@ namespace gazebo
     /// \brief Current direction of the vehicle: FORWARD, NEUTRAL, REVERSE.
     public: DirectionType directionState;
 
-    /// \brief Minimum brake percentage
-    public: double minBrakePercent = 0;
-
     /// \brief Max torque that can be applied to the front wheels
     public: double frontTorque = 0;
 
@@ -179,6 +176,18 @@ namespace gazebo
     /// \brief Rear right wheel radius
     public: double brWheelRadius = 0;
 
+    /// \brief Front left joint friction
+    public: double flJointFriction = 0;
+
+    /// \brief Front right joint friction
+    public: double frJointFriction = 0;
+
+    /// \brief Rear left joint friction
+    public: double blJointFriction = 0;
+
+    /// \brief Rear right joint friction
+    public: double brJointFriction = 0;
+
     /// \brief Distance distance between front and rear axles
     public: double wheelbaseLength = 0;
 
@@ -249,6 +258,9 @@ PriusHybridPlugin::~PriusHybridPlugin()
 /////////////////////////////////////////////////
 void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
+  // shortcut to this->dataPtr
+  PriusHybridPluginPrivate *dPtr = this->dataPtr.get();
+
   this->dataPtr->model = _model;
   this->dataPtr->world = this->dataPtr->model->GetWorld();
   auto physicsEngine = this->dataPtr->world->Physics();
@@ -379,13 +391,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   else
     this->dataPtr->maxSteer = paramDefault;
 
-  paramName = "min_brake_percent";
-  paramDefault = 0.02;
-  if (_sdf->HasElement(paramName))
-    this->dataPtr->minBrakePercent = _sdf->Get<double>(paramName);
-  else
-    this->dataPtr->minBrakePercent = paramDefault;
-
   paramName = "flwheel_steering_p_gain";
   paramDefault = 0;
   if (_sdf->HasElement(paramName))
@@ -448,6 +453,12 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
      << this->dataPtr->frWheelRadius << " "
      << this->dataPtr->blWheelRadius << " "
      << this->dataPtr->brWheelRadius << std::endl;*/
+
+  // Get initial joint friction and add it to braking friction
+  dPtr->flJointFriction = dPtr->flWheelJoint->GetParam("friction", 1);
+  dPtr->frJointFriction = dPtr->frWheelJoint->GetParam("friction", 1);
+  dPtr->blJointFriction = dPtr->blWheelJoint->GetParam("friction", 0);
+  dPtr->brJointFriction = dPtr->brWheelJoint->GetParam("friction", 0);
 
   // Compute wheelbase, frontTrackWidth, and rearTrackWidth
   //  first compute the positions of the 4 wheel centers
@@ -522,7 +533,6 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
-  this->dataPtr->brakePedalPercent = 0;
   switch (_msg->int_value())
   {
     // e - gas pedal
@@ -586,6 +596,9 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
 /////////////////////////////////////////////////
 void PriusHybridPlugin::Update()
 {
+  // shortcut to this->dataPtr
+  PriusHybridPluginPrivate *dPtr = this->dataPtr.get();
+
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
   common::Time curTime = this->dataPtr->world->SimTime();
   double dt = (curTime - this->dataPtr->lastSimTime).Double();
@@ -601,21 +614,14 @@ void PriusHybridPlugin::Update()
     return;
   }
 
-  this->dataPtr->handWheelAngle =
-      this->dataPtr->handWheelJoint->Position();
-  this->dataPtr->flSteeringAngle =
-      this->dataPtr->flWheelSteeringJoint->Position();
-  this->dataPtr->frSteeringAngle =
-      this->dataPtr->frWheelSteeringJoint->Position();
+  dPtr->handWheelAngle = dPtr->handWheelJoint->Position();
+  dPtr->flSteeringAngle = dPtr->flWheelSteeringJoint->Position();
+  dPtr->frSteeringAngle = dPtr->frWheelSteeringJoint->Position();
 
-  this->dataPtr->flWheelAngularVelocity =
-    this->dataPtr->flWheelJoint->GetVelocity(1);
-  this->dataPtr->frWheelAngularVelocity =
-    this->dataPtr->frWheelJoint->GetVelocity(1);
-  this->dataPtr->blWheelAngularVelocity =
-    this->dataPtr->blWheelJoint->GetVelocity(0);
-  this->dataPtr->brWheelAngularVelocity =
-    this->dataPtr->brWheelJoint->GetVelocity(0);
+  dPtr->flWheelAngularVelocity = dPtr->flWheelJoint->GetVelocity(1);
+  dPtr->frWheelAngularVelocity = dPtr->frWheelJoint->GetVelocity(1);
+  dPtr->blWheelAngularVelocity = dPtr->blWheelJoint->GetVelocity(0);
+  dPtr->brWheelAngularVelocity = dPtr->brWheelJoint->GetVelocity(0);
 
   this->dataPtr->lastSimTime = curTime;
 
@@ -703,16 +709,15 @@ void PriusHybridPlugin::Update()
   //   + this->HandBrakePercent();
   double brakePercent = this->dataPtr->brakePedalPercent;
 
-  brakePercent = ignition::math::clamp(
-      brakePercent, this->dataPtr->minBrakePercent, 1.0);
-  this->dataPtr->flWheelJoint->SetParam("friction", 1,
-      brakePercent * this->dataPtr->frontBrakeTorque);
-  this->dataPtr->frWheelJoint->SetParam("friction", 1,
-      brakePercent * this->dataPtr->frontBrakeTorque);
-  this->dataPtr->blWheelJoint->SetParam("friction", 0,
-      brakePercent * this->dataPtr->backBrakeTorque);
-  this->dataPtr->brWheelJoint->SetParam("friction", 0,
-      brakePercent * this->dataPtr->backBrakeTorque);
+  brakePercent = ignition::math::clamp(brakePercent, 0.0, 1.0);
+  dPtr->flWheelJoint->SetParam("friction", 1,
+      dPtr->flJointFriction + brakePercent * dPtr->frontBrakeTorque);
+  dPtr->frWheelJoint->SetParam("friction", 1,
+      dPtr->frJointFriction + brakePercent * dPtr->frontBrakeTorque);
+  dPtr->blWheelJoint->SetParam("friction", 0,
+      dPtr->blJointFriction + brakePercent * dPtr->backBrakeTorque);
+  dPtr->brWheelJoint->SetParam("friction", 0,
+      dPtr->brJointFriction + brakePercent * dPtr->backBrakeTorque);
 
   this->dataPtr->flWheelJoint->SetForce(1, flGasTorque);
   this->dataPtr->frWheelJoint->SetForce(1, frGasTorque);
