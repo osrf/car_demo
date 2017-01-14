@@ -4,9 +4,13 @@
   # Consists of chassis with 2 steerable and 2 non-steerable wheels
   # SI units (length in meters)
 
+  # gravity constant [m/s^2]
+  grav = 9.81
+
   # Wheel parameters
   wheel_radius = 0.31265
   wheel_width = 0.215
+  # wheel contact parameters
   wheel_min_depth = 0.015
   wheel_kp = "1e7"
   # ensure understeer with more friction at rear
@@ -23,6 +27,24 @@
     :rear_right_wheel => 11,
   }
   mass = masses.values.inject(0.0, :+)
+
+  # chassis center of mass location
+  pos_from_cg = {
+    :front_wheels => -1.41,
+    :rear_wheels => 1.45,
+  }
+  wheelbase = pos_from_cg[:front_wheels].abs + pos_from_cg[:rear_wheels].abs
+  weight_distribution = {
+    :front => pos_from_cg[:rear_wheels].abs / wheelbase,
+    :rear => pos_from_cg[:front_wheels].abs / wheelbase,
+  }
+
+  # rolling resistance applied as joint friction at axles
+  rolling_resistance_coefficient = 0.014
+  rolling_resistance_force = mass * grav * rolling_resistance_coefficient
+  rolling_resistance_torque = rolling_resistance_force * wheel_radius
+  rolling_resistance_torque_front = weight_distribution[:front] * rolling_resistance_torque
+  rolling_resistance_torque_rear  = weight_distribution[:rear]  * rolling_resistance_torque
 %>
 <sdf version="1.6">
   <model name="prius_hybrid">
@@ -226,7 +248,7 @@
     </link>
 
     <link name="front_left_wheel">
-      <pose>0.767 -1.41 0.3 0 0 0</pose>
+      <pose>0.767 <%= pos_from_cg[:front_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:front_left_wheel] %></mass>
         <inertia>
@@ -281,7 +303,7 @@
     </link>
 
     <link name="front_right_wheel">
-      <pose>-0.767 -1.41 0.3 0 0 0</pose>
+      <pose>-0.767 <%= pos_from_cg[:front_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:front_right_wheel] %></mass>
         <inertia>
@@ -336,7 +358,7 @@
 
 
     <link name="rear_left_wheel">
-      <pose>0.793 1.45 0.3 0 0 0</pose>
+      <pose>0.793 <%= pos_from_cg[:rear_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:rear_right_wheel] %></mass>
         <inertia>
@@ -391,7 +413,7 @@
     </link>
 
     <link name="rear_right_wheel">
-      <pose>-0.793 1.45 0.3 0 0 0</pose>
+      <pose>-0.793 <%= pos_from_cg[:rear_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:rear_left_wheel] %></mass>
         <inertia>
@@ -456,6 +478,9 @@
       </axis>
       <axis2>
         <xyz>1 0 0</xyz>
+        <dynamics>
+          <friction><%= 0.5*rolling_resistance_torque_front %></friction>
+        </dynamics>
       </axis2>
     </joint>
 
@@ -472,6 +497,9 @@
       </axis>
       <axis2>
         <xyz>1 0 0</xyz>
+        <dynamics>
+          <friction><%= 0.5*rolling_resistance_torque_front %></friction>
+        </dynamics>
       </axis2>
     </joint>
 
@@ -480,6 +508,9 @@
       <parent>chassis</parent>
       <axis>
         <xyz>1 0 0</xyz>
+        <dynamics>
+          <friction><%= 0.5*rolling_resistance_torque_rear %></friction>
+        </dynamics>
       </axis>
     </joint>
     <joint type="revolute" name="rear_right_wheel_joint">
@@ -487,6 +518,9 @@
       <parent>chassis</parent>
       <axis>
         <xyz>1 0 0</xyz>
+        <dynamics>
+          <friction><%= 0.5*rolling_resistance_torque_rear %></friction>
+        </dynamics>
       </axis>
     </joint>
 
