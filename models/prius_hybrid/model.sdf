@@ -29,7 +29,7 @@
     <link name="chassis">
       <inertial>
         <mass>1356.0</mass>
-        <pose>0 0 0.48 0 0 0</pose>
+        <pose>0 -0.266 0.48 0 0 0</pose>
         <inertia>
           <ixx>2581.13354740</ixx>
           <ixy>0.0</ixy>
@@ -433,7 +433,7 @@
       <axis2>
         <xyz>1 0 0</xyz>
         <dynamics>
-          <friction>15.249850452613638</friction>
+          <friction>18.0474092253</friction>
         </dynamics>
       </axis2>
     </joint>
@@ -453,7 +453,7 @@
       <axis2>
         <xyz>1 0 0</xyz>
         <dynamics>
-          <friction>15.249850452613638</friction>
+          <friction>18.0474092253</friction>
         </dynamics>
       </axis2>
     </joint>
@@ -464,7 +464,7 @@
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>
-          <friction>14.829164922886365</friction>
+          <friction>12.031606150200002</friction>
         </dynamics>
       </axis>
     </joint>
@@ -474,7 +474,7 @@
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>
-          <friction>14.829164922886365</friction>
+          <friction>12.031606150200002</friction>
         </dynamics>
       </axis>
     </joint>

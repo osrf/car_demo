@@ -33,15 +33,16 @@
   mass = masses.values.inject(0.0, :+)
 
   # chassis center of mass location
-  pos_from_cg = {
+  pos_from_model = {
     :front_wheels => -1.41,
     :rear_wheels => 1.45,
   }
-  wheelbase = pos_from_cg[:front_wheels].abs + pos_from_cg[:rear_wheels].abs
+  wheelbase = pos_from_model[:front_wheels].abs + pos_from_model[:rear_wheels].abs
   weight_distribution = {
-    :front => pos_from_cg[:rear_wheels].abs / wheelbase,
-    :rear => pos_from_cg[:front_wheels].abs / wheelbase,
+    :front => 0.6,
+    :rear => 0.4,
   }
+  pos_from_model[:chassis_cg] = wheelbase*(1 - weight_distribution[:rear]) - pos_from_model[:rear_wheels]
   track_half_width_front = 0.760
   track_half_width_rear = 0.786
   track_half_width = 0.5 * (track_half_width_front + track_half_width_rear)
@@ -84,7 +85,7 @@
     <link name="chassis">
       <inertial>
         <mass><%= masses[:chassis] %></mass>
-        <pose>0 0 <%= chassis_cg_height %> 0 0 0</pose>
+        <pose>0 <%= -pos_from_model[:chassis_cg] %> <%= chassis_cg_height %> 0 0 0</pose>
         <inertia>
           <ixx>2581.13354740</ixx>
           <ixy>0.0</ixy>
@@ -255,7 +256,7 @@
     </link>
 
     <link name="front_left_wheel">
-      <pose><%= track_half_width_front %> <%= pos_from_cg[:front_wheels] %> 0.3 0 0 0</pose>
+      <pose><%= track_half_width_front %> <%= pos_from_model[:front_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:front_left_wheel] %></mass>
         <inertia>
@@ -310,7 +311,7 @@
     </link>
 
     <link name="front_right_wheel">
-      <pose><%= -track_half_width_front %> <%= pos_from_cg[:front_wheels] %> 0.3 0 0 0</pose>
+      <pose><%= -track_half_width_front %> <%= pos_from_model[:front_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:front_right_wheel] %></mass>
         <inertia>
@@ -366,7 +367,7 @@
 
 
     <link name="rear_left_wheel">
-      <pose><%= track_half_width_rear %> <%= pos_from_cg[:rear_wheels] %> 0.3 0 0 0</pose>
+      <pose><%= track_half_width_rear %> <%= pos_from_model[:rear_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:rear_right_wheel] %></mass>
         <inertia>
@@ -421,7 +422,7 @@
     </link>
 
     <link name="rear_right_wheel">
-      <pose><%= -track_half_width_rear %> <%= pos_from_cg[:rear_wheels] %> 0.3 0 0 0</pose>
+      <pose><%= -track_half_width_rear %> <%= pos_from_model[:rear_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:rear_left_wheel] %></mass>
         <inertia>
