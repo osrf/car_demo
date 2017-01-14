@@ -59,16 +59,16 @@ namespace gazebo
     /// \brief Physics update event connection
     public: event::ConnectionPtr updateConnection;
 
-    /// brief Front left wheel joint
+    /// \brief Front left wheel joint
     public: physics::JointPtr flWheelJoint;
 
-    /// brief Front right wheel joint
+    /// \brief Front right wheel joint
     public: physics::JointPtr frWheelJoint;
 
-    /// brief Rear left wheel joint
+    /// \brief Rear left wheel joint
     public: physics::JointPtr blWheelJoint;
 
-    /// brief Rear right wheel joint
+    /// \brief Rear right wheel joint
     public: physics::JointPtr brWheelJoint;
 
     /// \brief Front left wheel steering joint
