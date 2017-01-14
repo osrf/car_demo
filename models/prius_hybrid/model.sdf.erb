@@ -10,6 +10,7 @@
   # Wheel parameters
   wheel_radius = 0.31265
   wheel_width = 0.215
+  wheel_visual_offset = 0.04
   # wheel contact parameters
   wheel_min_depth = 0.015
   wheel_kp = "1e7"
@@ -41,6 +42,11 @@
     :front => pos_from_cg[:rear_wheels].abs / wheelbase,
     :rear => pos_from_cg[:front_wheels].abs / wheelbase,
   }
+  track_half_width_front = 0.760
+  track_half_width_rear = 0.786
+  track_half_width = 0.5 * (track_half_width_front + track_half_width_rear)
+  chassis_cg_height = 0.48
+  static_stability_factor = track_half_width / chassis_cg_height
 
   # rolling resistance applied as joint friction at axles
   rolling_resistance_coefficient = 0.014
@@ -78,7 +84,7 @@
     <link name="chassis">
       <inertial>
         <mass><%= masses[:chassis] %></mass>
-        <pose>0 0 0.48 0 0 0</pose>
+        <pose>0 0 <%= chassis_cg_height %> 0 0 0</pose>
         <inertia>
           <ixx>2581.13354740</ixx>
           <ixy>0.0</ixy>
@@ -249,7 +255,7 @@
     </link>
 
     <link name="front_left_wheel">
-      <pose>0.767 <%= pos_from_cg[:front_wheels] %> 0.3 0 0 0</pose>
+      <pose><%= track_half_width_front %> <%= pos_from_cg[:front_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:front_left_wheel] %></mass>
         <inertia>
@@ -263,7 +269,7 @@
       </inertial>
 
       <visual name="visual">
-        <pose>0.03 0.0 0.0 0 0 0</pose>
+        <pose><%= wheel_visual_offset %> 0.0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
@@ -277,7 +283,7 @@
       </visual>
 
       <collision name="collision">
-        <pose>-0.07 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
+        <pose>0.0 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
             <radius><%= wheel_radius %></radius>
@@ -304,7 +310,7 @@
     </link>
 
     <link name="front_right_wheel">
-      <pose>-0.767 <%= pos_from_cg[:front_wheels] %> 0.3 0 0 0</pose>
+      <pose><%= -track_half_width_front %> <%= pos_from_cg[:front_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:front_right_wheel] %></mass>
         <inertia>
@@ -317,6 +323,7 @@
         </inertia>
       </inertial>
       <visual name="visual">
+        <pose><%= -wheel_visual_offset %> 0.0 0.0 0 0 0</pose>
         <pose>0 0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
@@ -331,7 +338,7 @@
       </visual>
 
       <collision name="collision">
-        <pose>0.07 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
+        <pose>0.0 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
             <radius><%= wheel_radius %></radius>
@@ -359,7 +366,7 @@
 
 
     <link name="rear_left_wheel">
-      <pose>0.793 <%= pos_from_cg[:rear_wheels] %> 0.3 0 0 0</pose>
+      <pose><%= track_half_width_rear %> <%= pos_from_cg[:rear_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:rear_right_wheel] %></mass>
         <inertia>
@@ -373,7 +380,7 @@
       </inertial>
 
       <visual name="visual">
-        <pose>0.03 0.0 0.0 0 0 0</pose>
+        <pose><%= wheel_visual_offset %> 0.0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
@@ -387,7 +394,7 @@
       </visual>
 
       <collision name="collision">
-        <pose>-0.07 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
+        <pose>0.0 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
             <radius><%= wheel_radius %></radius>
@@ -414,7 +421,7 @@
     </link>
 
     <link name="rear_right_wheel">
-      <pose>-0.793 <%= pos_from_cg[:rear_wheels] %> 0.3 0 0 0</pose>
+      <pose><%= -track_half_width_rear %> <%= pos_from_cg[:rear_wheels] %> 0.3 0 0 0</pose>
       <inertial>
         <mass><%= masses[:rear_left_wheel] %></mass>
         <inertia>
@@ -427,7 +434,7 @@
         </inertia>
       </inertial>
       <visual name="visual">
-        <pose>0 0 0.0 0 0 0</pose>
+        <pose><%= -wheel_visual_offset %> 0.0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
@@ -441,7 +448,7 @@
       </visual>
 
       <collision name="collision">
-        <pose>0.07 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
+        <pose>0.0 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
             <radius><%= wheel_radius %></radius>

@@ -200,7 +200,7 @@
     </link>
 
     <link name="front_left_wheel">
-      <pose>0.767 -1.41 0.3 0 0 0</pose>
+      <pose>0.76 -1.41 0.3 0 0 0</pose>
       <inertial>
         <mass>11</mass>
         <inertia>
@@ -214,7 +214,7 @@
       </inertial>
 
       <visual name="visual">
-        <pose>0.03 0.0 0.0 0 0 0</pose>
+        <pose>0.04 0.0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
@@ -228,7 +228,7 @@
       </visual>
 
       <collision name="collision">
-        <pose>-0.07 0.0 0.0 0 1.5707963267948966 0</pose>
+        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
         <geometry>
           <sphere>
             <radius>0.31265</radius>
@@ -255,7 +255,7 @@
     </link>
 
     <link name="front_right_wheel">
-      <pose>-0.767 -1.41 0.3 0 0 0</pose>
+      <pose>-0.76 -1.41 0.3 0 0 0</pose>
       <inertial>
         <mass>11</mass>
         <inertia>
@@ -268,6 +268,7 @@
         </inertia>
       </inertial>
       <visual name="visual">
+        <pose>-0.04 0.0 0.0 0 0 0</pose>
         <pose>0 0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
@@ -282,7 +283,7 @@
       </visual>
 
       <collision name="collision">
-        <pose>0.07 0.0 0.0 0 1.5707963267948966 0</pose>
+        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
         <geometry>
           <sphere>
             <radius>0.31265</radius>
@@ -310,7 +311,7 @@
 
 
     <link name="rear_left_wheel">
-      <pose>0.793 1.45 0.3 0 0 0</pose>
+      <pose>0.786 1.45 0.3 0 0 0</pose>
       <inertial>
         <mass>11</mass>
         <inertia>
@@ -324,7 +325,7 @@
       </inertial>
 
       <visual name="visual">
-        <pose>0.03 0.0 0.0 0 0 0</pose>
+        <pose>0.04 0.0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
@@ -338,7 +339,7 @@
       </visual>
 
       <collision name="collision">
-        <pose>-0.07 0.0 0.0 0 1.5707963267948966 0</pose>
+        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
         <geometry>
           <sphere>
             <radius>0.31265</radius>
@@ -365,7 +366,7 @@
     </link>
 
     <link name="rear_right_wheel">
-      <pose>-0.793 1.45 0.3 0 0 0</pose>
+      <pose>-0.786 1.45 0.3 0 0 0</pose>
       <inertial>
         <mass>11</mass>
         <inertia>
@@ -378,7 +379,7 @@
         </inertia>
       </inertial>
       <visual name="visual">
-        <pose>0 0 0.0 0 0 0</pose>
+        <pose>-0.04 0.0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
@@ -392,7 +393,7 @@
       </visual>
 
       <collision name="collision">
-        <pose>0.07 0.0 0.0 0 1.5707963267948966 0</pose>
+        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
         <geometry>
           <sphere>
             <radius>0.31265</radius>
