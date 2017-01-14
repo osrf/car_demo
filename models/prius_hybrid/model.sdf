@@ -3,6 +3,7 @@
 <sdf version="1.6">
   <model name="prius_hybrid">
     <plugin name='priusHybrid' filename='libPriusHybridPlugin.so'>
+      <chassis>chassis</chassis>
       <front_left_wheel>prius_hybrid::front_left_combined_joint</front_left_wheel>
       <front_right_wheel>prius_hybrid::front_right_combined_joint</front_right_wheel>
       <front_left_wheel_steering>prius_hybrid::front_left_combined_joint</front_left_wheel_steering>
@@ -10,6 +11,7 @@
       <back_left_wheel>prius_hybrid::rear_left_wheel_joint</back_left_wheel>
       <back_right_wheel>prius_hybrid::rear_right_wheel_joint</back_right_wheel>
       <steering_wheel>prius_hybrid::steering_joint</steering_wheel>
+      <chassis_aero_force_gain>0.63045</chassis_aero_force_gain>
       <front_torque>3000</front_torque>
       <back_torque>3000</back_torque>
       <front_brake_torque>2062.56105432</front_brake_torque>

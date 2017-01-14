@@ -16,12 +16,13 @@
 */
 
 #include <mutex>
+#include <ignition/math/Vector3.hh>
 #include <ignition/transport/Node.hh>
 #include <ignition/transport/AdvertiseOptions.hh>
 
-#include "PriusHybridPlugin.hh"
 #include <gazebo/common/PID.hh>
 #include <gazebo/common/Time.hh>
+#include "PriusHybridPlugin.hh"
 
 namespace gazebo
 {
@@ -106,6 +107,10 @@ namespace gazebo
 
     /// \brief Current direction of the vehicle: FORWARD, NEUTRAL, REVERSE.
     public: DirectionType directionState;
+
+    /// \brief Chassis aerodynamic drag force coefficient,
+    /// with units of [N / (m/s)^2]
+    public: double chassisAeroForceGain = 0;
 
     /// \brief Max torque that can be applied to the front wheels
     public: double frontTorque = 0;
@@ -214,6 +219,9 @@ namespace gazebo
 
     /// \brief Steering angle of front right wheel at last update (radians)
     public: double frSteeringAngle = 0;
+
+    /// \brief Linear velocity of chassis c.g. in world frame at last update (m/s)
+    public: ignition::math::Vector3d chassisLinearVelocity = 0;
 
     /// \brief Angular velocity of front left wheel at last update (rad/s)
     public: double flWheelAngularVelocity = 0;
@@ -360,6 +368,13 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   std::string paramName;
   double paramDefault;
+
+  paramName = "chassis_aero_force_gain";
+  paramDefault = 1;
+  if (_sdf->HasElement(paramName))
+    this->dataPtr->chassisAeroForceGain = _sdf->Get<double>(paramName);
+  else
+    this->dataPtr->chassisAeroForceGain = paramDefault;
 
   paramName = "front_torque";
   paramDefault = 0;
@@ -634,7 +649,21 @@ void PriusHybridPlugin::Update()
   dPtr->blWheelAngularVelocity = dPtr->blWheelJoint->GetVelocity(0);
   dPtr->brWheelAngularVelocity = dPtr->brWheelJoint->GetVelocity(0);
 
+  dPtr->chassisLinearVelocity = dPtr->chassisLink->GetWorldCoGLinearVel();
+
   this->dataPtr->lastSimTime = curTime;
+
+  // Aero-dynamic drag on chassis
+  // F: force in world frame, applied at center of mass
+  // V: velocity in world frame of chassis center of mass
+  // C: drag coefficient based on straight-ahead driving [N / (m/s)^2]
+  // |V|: speed
+  // V_hat: velocity unit vector
+  // F = -C |V|^2 V_hat
+  auto dragForce = -dPtr->chassisAeroForceGain *
+        dPtr->chassisLinearVelocity.SquaredLength() *
+        dPtr->chassisLinearVelocity.Normalized();
+  dPtr->chassisLink->AddForce(dragForce);
 
   // PID (position) steering
   this->dataPtr->handWheelCmd =
