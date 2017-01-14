@@ -31,6 +31,7 @@
     :rear_right_wheel => 11,
   }
   mass = masses.values.inject(0.0, :+)
+  mg = mass * grav
 
   # chassis center of mass location
   pos_from_model = {
@@ -51,10 +52,17 @@
 
   # rolling resistance applied as joint friction at axles
   rolling_resistance_coefficient = 0.014
-  rolling_resistance_force = mass * grav * rolling_resistance_coefficient
+  rolling_resistance_force = mg * rolling_resistance_coefficient
   rolling_resistance_torque = rolling_resistance_force * wheel_radius
   rolling_resistance_torque_front = weight_distribution[:front] * rolling_resistance_torque
   rolling_resistance_torque_rear  = weight_distribution[:rear]  * rolling_resistance_torque
+
+  # maximum braking friction
+  max_braking_friction = 0.8
+  max_braking_force = mg * max_braking_friction
+  max_braking_torque = max_braking_force * wheel_radius
+  max_braking_torque_front = weight_distribution[:front] * max_braking_torque
+  max_braking_torque_rear  = weight_distribution[:rear]  * max_braking_torque
 %>
 <sdf version="1.6">
   <model name="prius_hybrid">
@@ -68,8 +76,8 @@
       <steering_wheel>prius_hybrid::steering_joint</steering_wheel>
       <front_torque>3000</front_torque>
       <back_torque>3000</back_torque>
-      <front_brake_torque>5000</front_brake_torque>
-      <back_brake_torque>2000</back_brake_torque>
+      <front_brake_torque><%= max_braking_torque_front %></front_brake_torque>
+      <back_brake_torque><%= max_braking_torque_rear %></back_brake_torque>
       <max_speed>27.78</max_speed>
       <!-- 37 deg ~= 0.6458 rad -->
       <max_steer>0.6458</max_steer>
