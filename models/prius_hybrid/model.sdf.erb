@@ -17,6 +17,9 @@
   wheel_friction_front = 0.9
   wheel_friction_rear = 1.1
 
+  # steering kinematics
+  caster_angle_deg = 5
+  caster_angle = caster_angle_deg * Math::PI / 180.0
   # inertial properties
   masses = {
     :chassis => 1356.0,
@@ -466,6 +469,7 @@
     </link>
 
     <joint type="universal" name="front_left_combined_joint">
+      <pose>0 0 0 <%= -caster_angle %> 0 0</pose>
       <child>front_left_wheel</child>
       <parent>chassis</parent>
       <axis>
@@ -485,6 +489,7 @@
     </joint>
 
     <joint type="universal" name="front_right_combined_joint">
+      <pose>0 0 0 <%= -caster_angle %> 0 0</pose>
       <child>front_right_wheel</child>
       <parent>chassis</parent>
       <axis>

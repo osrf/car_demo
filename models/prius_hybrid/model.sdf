@@ -420,6 +420,7 @@
     </link>
 
     <joint type="universal" name="front_left_combined_joint">
+      <pose>0 0 0 -0.08726646259971647 0 0</pose>
       <child>front_left_wheel</child>
       <parent>chassis</parent>
       <axis>
@@ -439,6 +440,7 @@
     </joint>
 
     <joint type="universal" name="front_right_combined_joint">
+      <pose>0 0 0 -0.08726646259971647 0 0</pose>
       <child>front_right_wheel</child>
       <parent>chassis</parent>
       <axis>
