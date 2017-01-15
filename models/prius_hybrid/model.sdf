@@ -12,10 +12,10 @@
       <back_right_wheel>prius_hybrid::rear_right_wheel_joint</back_right_wheel>
       <steering_wheel>prius_hybrid::steering_joint</steering_wheel>
       <chassis_aero_force_gain>0.63045</chassis_aero_force_gain>
-      <front_torque>3000</front_torque>
-      <back_torque>3000</back_torque>
-      <front_brake_torque>2062.56105432</front_brake_torque>
-      <back_brake_torque>1375.0407028800003</back_brake_torque>
+      <front_torque>515.64026358</front_torque>
+      <back_torque>343.76017572000006</back_torque>
+      <front_brake_torque>1031.28052716</front_brake_torque>
+      <back_brake_torque>687.5203514400001</back_brake_torque>
       <max_speed>27.78</max_speed>
       <!-- 37 deg ~= 0.6458 rad -->
       <max_steer>0.6458</max_steer>

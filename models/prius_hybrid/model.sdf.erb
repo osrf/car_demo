@@ -66,8 +66,15 @@
   max_braking_friction = 0.8
   max_braking_force = mg * max_braking_friction
   max_braking_torque = max_braking_force * wheel_radius
-  max_braking_torque_front = weight_distribution[:front] * max_braking_torque
-  max_braking_torque_rear  = weight_distribution[:rear]  * max_braking_torque
+  max_braking_torque_front = 0.5 * weight_distribution[:front] * max_braking_torque
+  max_braking_torque_rear  = 0.5 * weight_distribution[:rear]  * max_braking_torque
+
+  # maximum positive torque
+  max_throttle_accel_g = 0.4
+  max_throttle_force = mg * max_throttle_accel_g
+  max_throttle_torque = max_throttle_force * wheel_radius
+  max_throttle_torque_front = 0.5 * weight_distribution[:front] * max_throttle_torque
+  max_throttle_torque_rear  = 0.5 * weight_distribution[:rear]  * max_throttle_torque
 %>
 <sdf version="1.6">
   <model name="prius_hybrid">
@@ -81,8 +88,8 @@
       <back_right_wheel>prius_hybrid::rear_right_wheel_joint</back_right_wheel>
       <steering_wheel>prius_hybrid::steering_joint</steering_wheel>
       <chassis_aero_force_gain><%= aero_drag_force_gain %></chassis_aero_force_gain>
-      <front_torque>3000</front_torque>
-      <back_torque>3000</back_torque>
+      <front_torque><%= max_throttle_torque_front %></front_torque>
+      <back_torque><%= max_throttle_torque_rear %></back_torque>
       <front_brake_torque><%= max_braking_torque_front %></front_brake_torque>
       <back_brake_torque><%= max_braking_torque_rear %></back_brake_torque>
       <max_speed>27.78</max_speed>
