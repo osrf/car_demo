@@ -184,6 +184,9 @@ namespace gazebo
     /// \brief Brake pedal position in percentage. 1.0 =
     public: double brakePedalPercent = 0;
 
+    /// \brief Hand brake position in percentage.
+    public: double handbrakePercent = 1.0;
+
     /// \brief Angle of steering wheel at last update (radians)
     public: double handWheelAngle = 0;
 
@@ -819,6 +822,7 @@ void PriusHybridPlugin::Reset()
   this->dataPtr->handWheelCmd = 0;
   this->dataPtr->gasPedalPercent = 0;
   this->dataPtr->brakePedalPercent = 0;
+  this->dataPtr->handbrakePercent = 1.0;
   this->dataPtr->handWheelAngle  = 0;
   this->dataPtr->flSteeringAngle = 0;
   this->dataPtr->frSteeringAngle = 0;
@@ -953,11 +957,12 @@ void PriusHybridPlugin::Update()
     brGasTorque = gasPercent * this->dataPtr->backTorque * gasMultiplier;
   }
 
-  // Brake pedal, hand-brake torque.
-  // Compute percents and add together, saturating at 100%
-  // double brakePercent = this->BrakePedalPercent()
-  //   + this->HandBrakePercent();
-  double brakePercent = this->dataPtr->brakePedalPercent;
+  // auto release handbrake as soon as the gas pedal is depressed
+  if (this->dataPtr->gasPedalPercent > 0)
+    this->dataPtr->handbrakePercent = 0.0;
+
+  double brakePercent = this->dataPtr->brakePedalPercent
+      + this->dataPtr->handbrakePercent;
 
   brakePercent = ignition::math::clamp(
       brakePercent, this->dataPtr->minBrakePercent, 1.0);
