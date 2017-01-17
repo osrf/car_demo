@@ -40,6 +40,9 @@ namespace gazebo
     /// \brief Destructor.
     public: virtual ~PriusHybridPlugin();
 
+    // Documentation Inherited
+    public: virtual void Reset();
+
     /// \brief Load the controller.
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
 
@@ -72,6 +75,10 @@ namespace gazebo
     /// \brief Command to change gear to reverse, neutral or forward (drive)
     /// \param[in] _msg Int32 message data
     private: void OnCmdGear(const ignition::msgs::Int32 &_msg);
+
+    /// \brief Command to reset the world
+    /// \param[in] _msg Int32 message data. Not used
+    private: void OnReset(const ignition::msgs::Any &_msg);
 
     /// \brief Update on every time step
     private: void Update();
