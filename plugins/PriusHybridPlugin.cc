@@ -539,7 +539,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->worldControlPub =
     this->dataPtr->gznode->Advertise<msgs::WorldControl>("~/world_control");
 
-
   this->dataPtr->node.Subscribe("/keypress", &PriusHybridPlugin::OnKeyPressIgn,
       this);
 }
