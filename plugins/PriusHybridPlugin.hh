@@ -40,6 +40,9 @@ namespace gazebo
     /// \brief Destructor.
     public: virtual ~PriusHybridPlugin();
 
+    // Documentation Inherited
+    public: virtual void Reset();
+
     /// \brief Load the controller.
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
 

@@ -237,6 +237,9 @@ namespace gazebo
 
     /// \brief Keyboard control type
     public: int keyControl = 0;
+
+    /// \brief Publisher for the world_control topic.
+    public: transport::PublisherPtr worldControlPub;
   };
 }
 
@@ -530,6 +533,10 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->dataPtr->gznode->Subscribe("~/keyboard/keypress",
         &PriusHybridPlugin::OnKeyPress, this, true);
 
+  this->dataPtr->worldControlPub =
+    this->dataPtr->gznode->Advertise<msgs::WorldControl>("~/world_control");
+
+
   this->dataPtr->node.Subscribe("/keypress", &PriusHybridPlugin::OnKeyPressIgn,
       this);
 }
@@ -788,8 +795,15 @@ void PriusHybridPlugin::OnKeyPressIgn(const ignition::msgs::Any &_msg)
 /////////////////////////////////////////////////
 void PriusHybridPlugin::OnReset(const ignition::msgs::Any & /*_msg*/)
 {
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  msgs::WorldControl msg;
+  msg.mutable_reset()->set_all(true);
 
+  this->dataPtr->worldControlPub->Publish(msg);
+}
+
+/////////////////////////////////////////////////
+void PriusHybridPlugin::Reset()
+{
   this->dataPtr->odom = 0;
   this->dataPtr->flWheelSteeringPID.Reset();
   this->dataPtr->frWheelSteeringPID.Reset();
@@ -820,8 +834,6 @@ void PriusHybridPlugin::OnReset(const ignition::msgs::Any & /*_msg*/)
   this->dataPtr->dataPoints.clear();
   this->dataPtr->quitLogging = false;
 
-  this->dataPtr->world->Reset();
-
   // Start a new logger thread.
   this->dataPtr->loggerThread.reset(new std::thread(
         std::bind(&PriusHybridPlugin::RunLogger, this)));
@@ -831,14 +843,12 @@ void PriusHybridPlugin::OnReset(const ignition::msgs::Any & /*_msg*/)
 void PriusHybridPlugin::Update()
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+
   common::Time curTime = this->dataPtr->world->SimTime();
   double dt = (curTime - this->dataPtr->lastSimTime).Double();
   if (dt < 0)
   {
-    // has time been reset?
-    this->dataPtr->lastSimTime = curTime;
-    this->dataPtr->lastMsgTime = curTime;
-
+    this->Reset();
     return;
   }
   else if (ignition::math::equal(dt, 0.0))
