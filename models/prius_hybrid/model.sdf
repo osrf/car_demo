@@ -164,7 +164,7 @@
     </link>
 
     <link name="steering_wheel">
-      <pose>0.44 -0.717609 0.938807 -0.87 0 0</pose>
+      <pose>0.357734 -0.627868 0.988243 -1.302101 0 0</pose>
       <inertial>
         <mass>1.0</mass>
         <inertia>
@@ -179,8 +179,8 @@
       <collision name="collision">
         <geometry>
           <cylinder>
-            <radius>0.16</radius>
-            <length>0.01</length>
+            <radius>0.178172</radius>
+            <length>0.041845</length>
           </cylinder>
         </geometry>
         <surface>
@@ -192,11 +192,16 @@
         </surface>
       </collision>
       <visual name="visual">
+        <pose>0 0 0 1.302101 0 0</pose>
         <geometry>
-          <cylinder>
-            <radius>0.16</radius>
-            <length>0.01</length>
-          </cylinder>
+          <mesh>
+            <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
+            <scale>0.01 0.01 0.01</scale>
+            <submesh>
+              <name>Steering_Wheel</name>
+              <center>true</center>
+            </submesh>
+          </mesh>
         </geometry>
       </visual>
     </link>
@@ -486,7 +491,8 @@
       <parent>chassis</parent>
       <child>steering_wheel</child>
       <axis>
-        <xyz>0 1 0.84365</xyz>
+        <!--<xyz>0 1 0.84365</xyz>-->
+        <xyz>0 0.964095 0.265556</xyz>
         <limit>
           <lower>-3.14</lower>
           <upper>3.14</upper>

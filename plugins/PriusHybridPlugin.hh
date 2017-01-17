@@ -40,14 +40,45 @@ namespace gazebo
     /// \brief Destructor.
     public: virtual ~PriusHybridPlugin();
 
+    // Documentation Inherited
+    public: virtual void Reset();
+
     /// \brief Load the controller.
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
+
+    /// \brief Background thread for the data logger
+    private: void RunLogger();
 
     /// \brief Callback each time a key message is received.
     /// \param[in] _msg Keypress message.
     private: void OnKeyPress(ConstAnyPtr &_msg);
 
-    private: void OnCmdVel(const ignition::msgs::CmdVel2D &_msg);
+    /// \brief Callback each time a key message is received.
+    /// \param[in] _msg Keypress message.
+    private: void OnKeyPressIgn(const ignition::msgs::Any &_msg);
+
+    /// \brief Key control
+    /// \param[in] _key key value
+    private: void KeyControl(const int _key);
+
+    /// \brief Key control type A
+    /// \param[in] _key key value
+    private: void KeyControlTypeA(const int _key);
+
+    /// \brief Key control type B
+    /// \param[in] _key key value
+    private: void KeyControlTypeB(const int _key);
+
+    /// \param[in] _msg Pose message
+    private: void OnCmdVel(const ignition::msgs::Pose &_msg);
+
+    /// \brief Command to change gear to reverse, neutral or forward (drive)
+    /// \param[in] _msg Int32 message data
+    private: void OnCmdGear(const ignition::msgs::Int32 &_msg);
+
+    /// \brief Command to reset the world
+    /// \param[in] _msg Int32 message data. Not used
+    private: void OnReset(const ignition::msgs::Any &_msg);
 
     /// \brief Update on every time step
     private: void Update();
