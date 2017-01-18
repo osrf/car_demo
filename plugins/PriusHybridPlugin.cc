@@ -551,6 +551,11 @@ void PriusHybridPlugin::RunLogger()
 
   this->dataPtr->loggerStream.open(filename.c_str());
   this->dataPtr->loggerStream << "# Timestamp, gear, odom, mph, mpg\n";
+  this->dataPtr->loggerStream.flush();
+
+  std::string symlinkName = "/tmp/prius_data.txt";
+  std::remove(symlinkName.c_str());
+  symlink(filename.c_str(), symlinkName.c_str() );
 
   while (!this->dataPtr->quitLogging)
   {
