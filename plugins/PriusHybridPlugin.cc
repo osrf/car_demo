@@ -194,6 +194,18 @@ namespace gazebo
     /// \brief Distance distance between rear left and right wheels
     public: double backTrackWidth = 0;
 
+    /// \brief Gas energy density (J/gallon)
+    public: const double kGasEnergyDensity = 1.29e8;
+
+    /// \brief Gas engine efficiency
+    public: const double kGasEfficiency = 0.4;
+
+    /// \brief Gas consumption (gallon)
+    public: double gasConsumption = 0;
+
+    /// \brief Battery state-of-charge (percent, 0.0 - 1.0)
+    public: double batteryCharge = 0.75;
+
     /// \brief Gas pedal position in percentage. 1.0 = Fully accelerated.
     public: double gasPedalPercent = 0;
 
@@ -989,6 +1001,9 @@ void PriusHybridPlugin::Update()
     flGasTorque = gasPercent*dPtr->frontTorque * gasMultiplier;
     frGasTorque = gasPercent*dPtr->frontTorque * gasMultiplier;
   }
+  double frontGasMechanicalPower =
+      std::abs(flGasTorque * dPtr->flWheelAngularVelocity) +
+      std::abs(frGasTorque * dPtr->frWheelAngularVelocity);
 
   if (fabs(dPtr->blWheelAngularVelocity * dPtr->blWheelRadius) < dPtr->maxSpeed &&
       fabs(dPtr->brWheelAngularVelocity * dPtr->brWheelRadius) < dPtr->maxSpeed)
@@ -996,6 +1011,11 @@ void PriusHybridPlugin::Update()
     blGasTorque = gasPercent * dPtr->backTorque * gasMultiplier;
     brGasTorque = gasPercent * dPtr->backTorque * gasMultiplier;
   }
+  double backGasMechanicalPower =
+      std::abs(blGasTorque * dPtr->blWheelAngularVelocity) +
+      std::abs(brGasTorque * dPtr->brWheelAngularVelocity);
+  dPtr->gasConsumption += dt / dPtr->kGasEfficiency / dPtr->kGasEnergyDensity
+      * (frontGasMechanicalPower + backGasMechanicalPower);
 
   // auto release handbrake as soon as the gas pedal is depressed
   if (this->dataPtr->gasPedalPercent > 0)
@@ -1040,8 +1060,10 @@ void PriusHybridPlugin::Update()
   // Distance traveled in miles.
   this->dataPtr->odom += (fabs(linearVel) * dt/3600.0);
 
-  // \todo: Actually compute MPG
-  double mpg = 1.0 / std::max(linearVel, 0.0);
+  // Accumulated mpg since last reset
+  // max value: 99.9
+  double mpg = std::min(99.9,
+      dPtr->odom / std::max(dPtr->gasConsumption, 1e-6));
 
   if ((curTime - this->dataPtr->lastMsgTime) > .5)
   {
