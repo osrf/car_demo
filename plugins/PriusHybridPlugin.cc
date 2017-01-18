@@ -870,6 +870,8 @@ void PriusHybridPlugin::Reset()
   this->dataPtr->flWheelSteeringCmd = 0;
   this->dataPtr->frWheelSteeringCmd = 0;
   this->dataPtr->handWheelCmd = 0;
+  this->dataPtr->batteryCharge = 0.75;
+  this->dataPtr->gasConsumption = 0;
   this->dataPtr->gasPedalPercent = 0;
   this->dataPtr->brakePedalPercent = 0;
   this->dataPtr->handbrakePercent = 1.0;
