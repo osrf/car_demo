@@ -1,5 +1,81 @@
 <?xml version="1.0" ?>
+<%
+  # 2016 Toyota Prius with rigid suspension, front steering
+  # Consists of chassis with 2 steerable and 2 non-steerable wheels
+  # SI units (length in meters)
 
+  # gravity constant [m/s^2]
+  grav = 9.81
+
+  # Wheel parameters
+  wheel_radius = 0.31265
+  wheel_width = 0.215
+  wheel_visual_offset = 0.04
+  # wheel contact parameters
+  wheel_min_depth = 0.015
+  wheel_kp = "1e7"
+  # ensure understeer with more friction at rear
+  wheel_friction_front = 0.9
+  wheel_friction_rear = 1.1
+
+  # steering kinematics
+  caster_angle_deg = 5
+  caster_angle = caster_angle_deg * Math::PI / 180.0
+  # inertial properties
+  masses = {
+    :chassis => 1356.0,
+    :steering_wheel => 1.0,
+    :front_left_wheel => 11,
+    :front_right_wheel => 11,
+    :rear_left_wheel => 11,
+    :rear_right_wheel => 11,
+  }
+  mass = masses.values.inject(0.0, :+)
+  mg = mass * grav
+
+  # chassis center of mass location
+  pos_from_model = {
+    :front_wheels => -1.41,
+    :rear_wheels => 1.45,
+  }
+  wheelbase = pos_from_model[:front_wheels].abs + pos_from_model[:rear_wheels].abs
+  weight_distribution = {
+    :front => 0.6,
+    :rear => 0.4,
+  }
+  pos_from_model[:chassis_cg] = wheelbase*(1 - weight_distribution[:rear]) - pos_from_model[:rear_wheels]
+  track_half_width_front = 0.760
+  track_half_width_rear = 0.786
+  track_half_width = 0.5 * (track_half_width_front + track_half_width_rear)
+  chassis_cg_height = 0.48
+  static_stability_factor = track_half_width / chassis_cg_height
+
+  # chassis aerodynamic drag
+  # deceleration per speed squared [m/s^2 / (m/s)^2] = [s]
+  aero_drag_accel_gain = 4.5e-4
+  aero_drag_force_gain = mass * aero_drag_accel_gain
+
+  # rolling resistance applied as joint friction at axles
+  rolling_resistance_coefficient = 0.014
+  rolling_resistance_force = mg * rolling_resistance_coefficient
+  rolling_resistance_torque = rolling_resistance_force * wheel_radius
+  rolling_resistance_torque_front = weight_distribution[:front] * rolling_resistance_torque
+  rolling_resistance_torque_rear  = weight_distribution[:rear]  * rolling_resistance_torque
+
+  # maximum braking friction
+  max_braking_friction = 0.8
+  max_braking_force = mg * max_braking_friction
+  max_braking_torque = max_braking_force * wheel_radius
+  max_braking_torque_front = 0.5 * weight_distribution[:front] * max_braking_torque
+  max_braking_torque_rear  = 0.5 * weight_distribution[:rear]  * max_braking_torque
+
+  # maximum positive torque
+  max_throttle_accel_g = 0.4
+  max_throttle_force = mg * max_throttle_accel_g
+  max_throttle_torque = max_throttle_force * wheel_radius
+  max_throttle_torque_front = 0.5 * weight_distribution[:front] * max_throttle_torque
+  max_throttle_torque_rear  = 0.5 * weight_distribution[:rear]  * max_throttle_torque
+%>
 <sdf version="1.6">
   <model name="prius_hybrid">
     <plugin name='priusHybrid' filename='libPriusHybridPlugin.so'>
@@ -11,11 +87,11 @@
       <back_left_wheel>prius_hybrid::rear_left_wheel_joint</back_left_wheel>
       <back_right_wheel>prius_hybrid::rear_right_wheel_joint</back_right_wheel>
       <steering_wheel>prius_hybrid::steering_joint</steering_wheel>
-      <chassis_aero_force_gain>0.63045</chassis_aero_force_gain>
-      <front_torque>515.64026358</front_torque>
-      <back_torque>343.76017572000006</back_torque>
-      <front_brake_torque>1031.28052716</front_brake_torque>
-      <back_brake_torque>687.5203514400001</back_brake_torque>
+      <chassis_aero_force_gain><%= aero_drag_force_gain %></chassis_aero_force_gain>
+      <front_torque><%= max_throttle_torque_front %></front_torque>
+      <back_torque><%= max_throttle_torque_rear %></back_torque>
+      <front_brake_torque><%= max_braking_torque_front %></front_brake_torque>
+      <back_brake_torque><%= max_braking_torque_rear %></back_brake_torque>
       <max_speed>27.78</max_speed>
       <!-- 37 deg ~= 0.6458 rad -->
       <max_steer>0.6458</max_steer>
@@ -30,8 +106,8 @@
     <pose>0 0 0.03 0 0 0</pose>
     <link name="chassis">
       <inertial>
-        <mass>1356.0</mass>
-        <pose>0 -0.266 0.48 0 0 0</pose>
+        <mass><%= masses[:chassis] %></mass>
+        <pose>0 <%= -pos_from_model[:chassis_cg] %> <%= chassis_cg_height %> 0 0 0</pose>
         <inertia>
           <ixx>2581.13354740</ixx>
           <ixy>0.0</ixy>
@@ -166,7 +242,7 @@
     <link name="steering_wheel">
       <pose>0.357734 -0.627868 0.988243 -1.302101 0 0</pose>
       <inertial>
-        <mass>1.0</mass>
+        <mass><%= masses[:steering_wheel] %></mass>
         <inertia>
           <ixx>0.14583300</ixx>
           <ixy>0</ixy>
@@ -207,9 +283,9 @@
     </link>
 
     <link name="front_left_wheel">
-      <pose>0.76 -1.41 0.3 0 0 0</pose>
+      <pose><%= track_half_width_front %> <%= pos_from_model[:front_wheels] %> 0.3 0 0 0</pose>
       <inertial>
-        <mass>11</mass>
+        <mass><%= masses[:front_left_wheel] %></mass>
         <inertia>
           <ixx>0.58631238</ixx>
           <ixy>0.0</ixy>
@@ -221,7 +297,7 @@
       </inertial>
 
       <visual name="visual">
-        <pose>0.04 0.0 0.0 0 0 0</pose>
+        <pose><%= wheel_visual_offset %> 0.0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
@@ -235,25 +311,25 @@
       </visual>
 
       <collision name="collision">
-        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
+        <pose>0.0 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
-            <radius>0.31265</radius>
+            <radius><%= wheel_radius %></radius>
           </sphere>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>0.9</mu>
-              <mu2>0.9</mu2>
+              <mu><%= wheel_friction_front %></mu>
+              <mu2><%= wheel_friction_front %></mu2>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
+              <min_depth><%= wheel_min_depth %></min_depth>
+              <kp><%= wheel_kp %></kp>
             </ode>
           </contact>
         </surface>
@@ -262,9 +338,9 @@
     </link>
 
     <link name="front_right_wheel">
-      <pose>-0.76 -1.41 0.3 0 0 0</pose>
+      <pose><%= -track_half_width_front %> <%= pos_from_model[:front_wheels] %> 0.3 0 0 0</pose>
       <inertial>
-        <mass>11</mass>
+        <mass><%= masses[:front_right_wheel] %></mass>
         <inertia>
           <ixx>0.58631238</ixx>
           <ixy>0.0</ixy>
@@ -275,7 +351,7 @@
         </inertia>
       </inertial>
       <visual name="visual">
-        <pose>-0.04 0.0 0.0 0 0 0</pose>
+        <pose><%= -wheel_visual_offset %> 0.0 0.0 0 0 0</pose>
         <pose>0 0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
@@ -290,25 +366,25 @@
       </visual>
 
       <collision name="collision">
-        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
+        <pose>0.0 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
-            <radius>0.31265</radius>
+            <radius><%= wheel_radius %></radius>
           </sphere>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>0.9</mu>
-              <mu2>0.9</mu2>
+              <mu><%= wheel_friction_front %></mu>
+              <mu2><%= wheel_friction_front %></mu2>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
+              <min_depth><%= wheel_min_depth %></min_depth>
+              <kp><%= wheel_kp %></kp>
             </ode>
           </contact>
         </surface>
@@ -318,9 +394,9 @@
 
 
     <link name="rear_left_wheel">
-      <pose>0.786 1.45 0.3 0 0 0</pose>
+      <pose><%= track_half_width_rear %> <%= pos_from_model[:rear_wheels] %> 0.3 0 0 0</pose>
       <inertial>
-        <mass>11</mass>
+        <mass><%= masses[:rear_right_wheel] %></mass>
         <inertia>
           <ixx>0.58631238</ixx>
           <ixy>0.0</ixy>
@@ -332,7 +408,7 @@
       </inertial>
 
       <visual name="visual">
-        <pose>0.04 0.0 0.0 0 0 0</pose>
+        <pose><%= wheel_visual_offset %> 0.0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
@@ -346,25 +422,25 @@
       </visual>
 
       <collision name="collision">
-        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
+        <pose>0.0 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
-            <radius>0.31265</radius>
+            <radius><%= wheel_radius %></radius>
           </sphere>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>1.1</mu>
-              <mu2>1.1</mu2>
+              <mu><%= wheel_friction_rear %></mu>
+              <mu2><%= wheel_friction_rear %></mu2>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
+              <min_depth><%= wheel_min_depth %></min_depth>
+              <kp><%= wheel_kp %></kp>
             </ode>
           </contact>
         </surface>
@@ -373,9 +449,9 @@
     </link>
 
     <link name="rear_right_wheel">
-      <pose>-0.786 1.45 0.3 0 0 0</pose>
+      <pose><%= -track_half_width_rear %> <%= pos_from_model[:rear_wheels] %> 0.3 0 0 0</pose>
       <inertial>
-        <mass>11</mass>
+        <mass><%= masses[:rear_left_wheel] %></mass>
         <inertia>
           <ixx>0.58631238</ixx>
           <ixy>0.0</ixy>
@@ -386,7 +462,7 @@
         </inertia>
       </inertial>
       <visual name="visual">
-        <pose>-0.04 0.0 0.0 0 0 0</pose>
+        <pose><%= -wheel_visual_offset %> 0.0 0.0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://prius_hybrid/meshes/Hybrid.obj</uri>
@@ -400,25 +476,25 @@
       </visual>
 
       <collision name="collision">
-        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
+        <pose>0.0 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
         <geometry>
           <sphere>
-            <radius>0.31265</radius>
+            <radius><%= wheel_radius %></radius>
           </sphere>
         </geometry>
         <surface>
           <friction>
             <ode>
-              <mu>1.1</mu>
-              <mu2>1.1</mu2>
+              <mu><%= wheel_friction_rear %></mu>
+              <mu2><%= wheel_friction_rear %></mu2>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
+              <min_depth><%= wheel_min_depth %></min_depth>
+              <kp><%= wheel_kp %></kp>
             </ode>
           </contact>
         </surface>
@@ -426,7 +502,7 @@
     </link>
 
     <joint type="universal" name="front_left_combined_joint">
-      <pose>0 0 0 -0.08726646259971647 0 0</pose>
+      <pose>0 0 0 <%= -caster_angle %> 0 0</pose>
       <child>front_left_wheel</child>
       <parent>chassis</parent>
       <axis>
@@ -440,13 +516,13 @@
       <axis2>
         <xyz>1 0 0</xyz>
         <dynamics>
-          <friction>18.0474092253</friction>
+          <friction><%= 0.5*rolling_resistance_torque_front %></friction>
         </dynamics>
       </axis2>
     </joint>
 
     <joint type="universal" name="front_right_combined_joint">
-      <pose>0 0 0 -0.08726646259971647 0 0</pose>
+      <pose>0 0 0 <%= -caster_angle %> 0 0</pose>
       <child>front_right_wheel</child>
       <parent>chassis</parent>
       <axis>
@@ -460,7 +536,7 @@
       <axis2>
         <xyz>1 0 0</xyz>
         <dynamics>
-          <friction>18.0474092253</friction>
+          <friction><%= 0.5*rolling_resistance_torque_front %></friction>
         </dynamics>
       </axis2>
     </joint>
@@ -471,7 +547,7 @@
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>
-          <friction>12.031606150200002</friction>
+          <friction><%= 0.5*rolling_resistance_torque_rear %></friction>
         </dynamics>
       </axis>
     </joint>
@@ -481,7 +557,7 @@
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>
-          <friction>12.031606150200002</friction>
+          <friction><%= 0.5*rolling_resistance_torque_rear %></friction>
         </dynamics>
       </axis>
     </joint>
