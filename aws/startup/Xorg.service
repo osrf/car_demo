@@ -1,0 +1,9 @@
+[Unit]
+Description=X server with virtual screen
+
+[Service]
+ExecStart=/usr/bin/Xorg :0 -config /home/ubuntu/startup/xorg.conf
+
+
+[Install]
+WantedBy=docker.service
