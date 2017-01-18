@@ -213,7 +213,7 @@ namespace gazebo
     public: double frSteeringAngle = 0;
 
     /// \brief Linear velocity of chassis c.g. in world frame at last update (m/s)
-    public: ignition::math::Vector3d chassisLinearVelocity = 0;
+    public: ignition::math::Vector3d chassisLinearVelocity;
 
     /// \brief Angular velocity of front left wheel at last update (rad/s)
     public: double flWheelAngularVelocity = 0;
@@ -649,10 +649,10 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     case 69:
     case 101:
     {
-      dPtr->brakePedalPercent = 0.0;
-      dPtr->gasPedalPercent += 0.1;
-      dPtr->gasPedalPercent = std::min(dPtr->gasPedalPercent, 1.0);
-      dPtr->lastPedalCmdTime = dPtr->world->SimTime();
+      this->dataPtr->brakePedalPercent = 0.0;
+      this->dataPtr->gasPedalPercent += 0.1;
+      this->dataPtr->gasPedalPercent = std::min(this->dataPtr->gasPedalPercent, 1.0);
+      this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
       break;
     }
     // w - release pedals
@@ -746,7 +746,7 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
       this->dataPtr->gasPedalPercent =
           std::min(this->dataPtr->gasPedalPercent, 1.0);
       this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
-      this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
+      this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
       break;
     }
     // a - steer left
@@ -767,7 +767,7 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
       this->dataPtr->gasPedalPercent =
           std::min(this->dataPtr->gasPedalPercent, 1.0);
       this->dataPtr->directionState = PriusHybridPluginPrivate::REVERSE;
-      this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
+      this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
       break;
     }
     // d - steer right
@@ -784,7 +784,7 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     {
       this->dataPtr->brakePedalPercent = 1.0;
       this->dataPtr->gasPedalPercent = 0.0;
-      this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
+      this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
       break;
     }
     // x neutral
@@ -847,7 +847,7 @@ void PriusHybridPlugin::Reset()
   this->dataPtr->handWheelPID.Reset();
   this->dataPtr->lastMsgTime = 0;
   this->dataPtr->lastSimTime = 0;
-  this->dataPtr->lastGasCmdTime = 0;
+  this->dataPtr->lastPedalCmdTime = 0;
   this->dataPtr->lastSteeringCmdTime = 0;
   this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
   this->dataPtr->steeringRatio = 0;
@@ -906,7 +906,7 @@ void PriusHybridPlugin::Update()
   dPtr->blWheelAngularVelocity = dPtr->blWheelJoint->GetVelocity(0);
   dPtr->brWheelAngularVelocity = dPtr->brWheelJoint->GetVelocity(0);
 
-  dPtr->chassisLinearVelocity = dPtr->chassisLink->GetWorldCoGLinearVel();
+  dPtr->chassisLinearVelocity = dPtr->chassisLink->WorldCoGLinearVel();
 
   this->dataPtr->lastSimTime = curTime;
 
