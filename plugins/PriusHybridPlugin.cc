@@ -850,7 +850,6 @@ void PriusHybridPlugin::Reset()
   this->dataPtr->lastPedalCmdTime = 0;
   this->dataPtr->lastSteeringCmdTime = 0;
   this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
-  this->dataPtr->steeringRatio = 0;
   this->dataPtr->flWheelSteeringCmd = 0;
   this->dataPtr->frWheelSteeringCmd = 0;
   this->dataPtr->handWheelCmd = 0;
