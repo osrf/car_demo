@@ -50,6 +50,10 @@
   chassis_cg_height = 0.48
   static_stability_factor = track_half_width / chassis_cg_height
 
+  # max speed at which torque can be applied at wheels
+  max_speed_mph = 85
+  max_speed = max_speed_mph / 2.23694
+
   # chassis aerodynamic drag
   # deceleration per speed squared [m/s^2 / (m/s)^2] = [s]
   aero_drag_accel_gain = 4.5e-4
@@ -92,7 +96,7 @@
       <back_torque><%= max_throttle_torque_rear %></back_torque>
       <front_brake_torque><%= max_braking_torque_front %></front_brake_torque>
       <back_brake_torque><%= max_braking_torque_rear %></back_brake_torque>
-      <max_speed>27.78</max_speed>
+      <max_speed><%= max_speed %></max_speed>
       <!-- 37 deg ~= 0.6458 rad -->
       <max_steer>0.6458</max_steer>
       <flwheel_steering_p_gain>1e3</flwheel_steering_p_gain>
