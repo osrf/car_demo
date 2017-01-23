@@ -4,6 +4,10 @@
 
 extra_opts=""
 cmd=""
+do_shutdown=1
+container_name=aws_priuscup_$(date +%Y_%b_%d_%H%M)
+
+
 if [ $# -eq 1 ]
 then
     if [ "--debug" = $1 ]
@@ -11,8 +15,22 @@ then
         # make it easy to run gdb inside the container
         extra_opts="-it --security-opt seccomp=unconfined"
         cmd=bash
+        do_shutdown=0
+    elif [ "--no-shutdown" = $1 ]
+    then
+        do_shutdown=0
     fi
 fi
+
+
+{
+    # Stop the container after 50 minutes
+    sleep 3000
+    echo "TIMEOUT TIMEOUT TIMEOUT"
+    sudo docker stop $container_name
+} &
+timer_pid=$!
+
 
 until sudo nvidia-docker ps
 do
@@ -48,4 +66,16 @@ eval sudo nvidia-docker run \
   -v "$code_dir:/code:ro" \
   -p 4000:4000 \
   -p 80:8080 \
+  --name $container_name \
   $extra_opts precious:latest $cmd
+
+
+# Stop the timeout timer
+kill -SIGKILL $timer_pid
+
+
+if [ $do_shutdown -eq 1 ]
+then
+    # Stop the amazon instance (saves money)
+    sudo shutdown -hP now
+fi

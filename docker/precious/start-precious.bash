@@ -8,4 +8,4 @@ trap cleanup EXIT
 
 source /usr/share/priuscup/setup.sh
 ignition --run /opt/priuscup/prius.ign &
-gzserver --verbose /usr/share/priuscup-0/worlds/raceway.world
+gzserver --verbose --server-plugin libMaxTimeToLivePlugin.so --lifespan=2700 /usr/share/priuscup-0/worlds/raceway.world
