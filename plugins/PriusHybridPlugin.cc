@@ -604,7 +604,9 @@ void PriusHybridPlugin::RunLogger()
 
   std::string symlinkName = "/tmp/prius_data.txt";
   std::remove(symlinkName.c_str());
-  symlink(filename.c_str(), symlinkName.c_str() );
+  int code = symlink(filename.c_str(), symlinkName.c_str());
+  if (code < 0)
+    std::cerr << "Error creating prius_data.txt symlink" << std::endl;
 
   while (!this->dataPtr->quitLogging)
   {
