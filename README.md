@@ -30,16 +30,24 @@ cd priuscup/docker/precious
 ```
 sudo docker tag precious:2017_Jan_12_1914 precious:latest
 ```
-	
+
 ## Testing Locally
+### option 1: cloudsim_deploy.bash
 1. Start the docker image
 ```
 cd priuscup/aws
 touch cloudsim-env.bash
 echo "{}" > cloudsim-options.bash
-./cloudsim_deploy.bash
+./cloudsim_deploy.bash --no-shutdown
 ```
 2. Open a browser to `http://127.0.0.1/`
+
+### option 2: run-local.bash
+```
+cd priuscup/aws
+./run-local.bash
+```
+After a few seconds a firefox window will open to `127.0.0.1`
 
 ## Deploying to AWS
 1. Start a g2.2xlarge instance with the AMI *ubuntu-nvidia-docker-16GiB* *ami-b71142d7*
@@ -49,3 +57,12 @@ cd priuscup/aws
 ./deploy-ec2.bash
 ```
 3. Save the AMI
+
+## Setting up a local demo
+1. Build a docker image (see instructions above)
+2. Save the image to a tar archive
+    `sudo docker save --output=/tmp/precious.tar precious:latest`
+3. Copy the tar archive to the demo machine and load it into docker
+    `sudo docker load --input=/tmp/precious.tar`
+4. Copy the `aws` folder to the demo machine
+5. To start a demo on the local machine, call `./run-local.bash`
