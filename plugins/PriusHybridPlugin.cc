@@ -270,7 +270,7 @@ namespace gazebo
     public: double logRate = 1;
 
     /// \brief Keyboard control type
-    public: int keyControl = 0;
+    public: int keyControl = 1;
 
     /// \brief Publisher for the world_control topic.
     public: transport::PublisherPtr worldControlPub;
@@ -668,7 +668,8 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     {
       this->dataPtr->brakePedalPercent = 0.0;
       this->dataPtr->gasPedalPercent += 0.1;
-      this->dataPtr->gasPedalPercent = std::min(this->dataPtr->gasPedalPercent, 1.0);
+      this->dataPtr->gasPedalPercent =
+          std::min(this->dataPtr->gasPedalPercent, 1.0);
       this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -696,6 +697,8 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     case 97:
     {
       this->dataPtr->handWheelCmd += 0.1;
+      this->dataPtr->handWheelCmd =
+          std::min(this->dataPtr->handWheelCmd, IGN_PI);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -704,6 +707,8 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     case 100:
     {
       this->dataPtr->handWheelCmd -= 0.1;
+      this->dataPtr->handWheelCmd =
+          std::max(this->dataPtr->handWheelCmd, -IGN_PI);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -752,13 +757,13 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
-  this->dataPtr->brakePedalPercent = 0;
   switch (_key)
   {
     // w - accelerate forward
     case 87:
     case 119:
     {
+      this->dataPtr->brakePedalPercent = 0.0;
       this->dataPtr->gasPedalPercent += 0.1;
       this->dataPtr->gasPedalPercent =
           std::min(this->dataPtr->gasPedalPercent, 1.0);
@@ -770,7 +775,9 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 65:
     case 97:
     {
-      this->dataPtr->handWheelCmd = this->dataPtr->handWheelAngle + 0.1;
+      this->dataPtr->handWheelCmd += 0.1;
+      this->dataPtr->handWheelCmd =
+          std::min(this->dataPtr->handWheelCmd, IGN_PI);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -778,6 +785,7 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 83:
     case 115:
     {
+      this->dataPtr->brakePedalPercent = 0.0;
       if (this->dataPtr->directionState != PriusHybridPluginPrivate::REVERSE)
         this->dataPtr->gasPedalPercent = 0.0;
       this->dataPtr->gasPedalPercent += 0.1;
@@ -791,7 +799,9 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 68:
     case 100:
     {
-      this->dataPtr->handWheelCmd = this->dataPtr->handWheelAngle - 0.1;
+      this->dataPtr->handWheelCmd -= 0.1;
+      this->dataPtr->handWheelCmd =
+          std::max(this->dataPtr->handWheelCmd, -IGN_PI);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
