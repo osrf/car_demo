@@ -253,7 +253,6 @@
           <contact>
             <ode>
               <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
             </ode>
           </contact>
         </surface>
@@ -308,7 +307,6 @@
           <contact>
             <ode>
               <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
             </ode>
           </contact>
         </surface>
@@ -364,7 +362,6 @@
           <contact>
             <ode>
               <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
             </ode>
           </contact>
         </surface>
@@ -418,7 +415,6 @@
           <contact>
             <ode>
               <min_depth>0.015</min_depth>
-              <kp>1e7</kp>
             </ode>
           </contact>
         </surface>
