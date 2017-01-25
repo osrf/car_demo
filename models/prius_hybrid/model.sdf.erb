@@ -21,14 +21,16 @@
   # steering kinematics
   caster_angle_deg = 5
   caster_angle = caster_angle_deg * Math::PI / 180.0
+
   # inertial properties
   masses = {
-    :chassis => 1356.0,
+    :chassis => 1326.0,
     :steering_wheel => 1.0,
     :front_left_wheel => 11,
     :front_right_wheel => 11,
     :rear_left_wheel => 11,
     :rear_right_wheel => 11,
+    :rear_axle => 30.0,
   }
   mass = masses.values.inject(0.0, :+)
   mg = mass * grav
@@ -49,6 +51,14 @@
   track_half_width = 0.5 * (track_half_width_front + track_half_width_rear)
   chassis_cg_height = 0.48
   static_stability_factor = track_half_width / chassis_cg_height
+
+  # rear axle geometry, inertia, stiffness
+  rear_axle_length = 2 * (track_half_width_rear - 0.5*wheel_width)
+  rear_axle_radius = 0.075
+  rear_axle_inertia_axial = 0.5 * masses[:rear_axle] * rear_axle_radius**2
+  rear_axle_inertia_radial = masses[:rear_axle] * (0.25 * rear_axle_radius**2 + 1/12.0*rear_axle_length**2)
+  rear_axle_stiffness = 50
+  rear_axle_damping = 0.1 * rear_axle_stiffness
 
   # max speed at which torque can be applied at wheels
   max_speed_mph = 85
@@ -545,9 +555,50 @@
       </axis2>
     </joint>
 
+    <link name="rear_axle">
+      <pose>0 <%= pos_from_model[:rear_wheels] %> 0.3 0 0 0</pose>
+      <inertial>
+        <mass><%= masses[:rear_axle] %></mass>
+        <inertia>
+          <ixx><%= rear_axle_inertia_axial %></ixx>
+          <ixy>0.0</ixy>
+          <iyy><%= rear_axle_inertia_radial %></iyy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+          <izz><%= rear_axle_inertia_radial %></izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>0.0 0.0 0.0 0 <%= Math::PI/2 %> 0</pose>
+        <geometry>
+          <cylinder>
+            <length><%= rear_axle_length  %></length>
+            <radius><%= rear_axle_radius  %></radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Grey</name>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+          </script>
+        </material>
+      </visual>
+    </link>
+
+    <joint type="revolute" name="rear_axle_joint">
+      <child>rear_axle</child>
+      <parent>chassis</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <dynamics>
+          <spring_stiffness><%= rear_axle_stiffness %></spring_stiffness>
+          <damping><%= rear_axle_damping %></damping>
+        </dynamics>
+      </axis>
+    </joint>
     <joint type="revolute" name="rear_left_wheel_joint">
       <child>rear_left_wheel</child>
-      <parent>chassis</parent>
+      <parent>rear_axle</parent>
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>
@@ -557,7 +608,7 @@
     </joint>
     <joint type="revolute" name="rear_right_wheel_joint">
       <child>rear_right_wheel</child>
-      <parent>chassis</parent>
+      <parent>rear_axle</parent>
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>

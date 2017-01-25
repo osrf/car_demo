@@ -30,7 +30,7 @@
     <pose>0 0 0.03 0 0 0</pose>
     <link name="chassis">
       <inertial>
-        <mass>1356.0</mass>
+        <mass>1326.0</mass>
         <pose>0 -0.266 0.48 0 0 0</pose>
         <inertia>
           <ixx>2581.13354740</ixx>
@@ -465,9 +465,50 @@
       </axis2>
     </joint>
 
+    <link name="rear_axle">
+      <pose>0 1.45 0.3 0 0 0</pose>
+      <inertial>
+        <mass>30.0</mass>
+        <inertia>
+          <ixx>0.08437499999999999</ixx>
+          <ixy>0.0</ixy>
+          <iyy>4.64581</iyy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+          <izz>4.64581</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
+        <geometry>
+          <cylinder>
+            <length>1.357</length>
+            <radius>0.075</radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Grey</name>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+          </script>
+        </material>
+      </visual>
+    </link>
+
+    <joint type="revolute" name="rear_axle_joint">
+      <child>rear_axle</child>
+      <parent>chassis</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <dynamics>
+          <spring_stiffness>50</spring_stiffness>
+          <damping>5.0</damping>
+        </dynamics>
+      </axis>
+    </joint>
     <joint type="revolute" name="rear_left_wheel_joint">
       <child>rear_left_wheel</child>
-      <parent>chassis</parent>
+      <parent>rear_axle</parent>
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>
@@ -477,7 +518,7 @@
     </joint>
     <joint type="revolute" name="rear_right_wheel_joint">
       <child>rear_right_wheel</child>
-      <parent>chassis</parent>
+      <parent>rear_axle</parent>
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>
