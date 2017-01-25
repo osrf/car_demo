@@ -66,6 +66,7 @@ eval sudo nvidia-docker run \
   -v "$code_dir:/code:ro" \
   -p 4000:4000 \
   -p 80:8080 \
+  --rm=true \
   --name $container_name \
   $extra_opts precious:latest $cmd
 
