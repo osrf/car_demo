@@ -562,8 +562,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   //   << " " << this->dataPtr->backTrackWidth << std::endl;
 
   // Max force that can be applied to hand steering wheel
-  double handWheelForce = 1;
-  this->dataPtr->handWheelPID.Init(100, 0, 0, 0, 0,
+  double handWheelForce = 10;
+  this->dataPtr->handWheelPID.Init(100, 0, 10, 0, 0,
       handWheelForce, -handWheelForce);
 
   // Max force that can be applied to wheel steering joints
