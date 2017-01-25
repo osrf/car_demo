@@ -87,8 +87,8 @@
   max_throttle_accel_g = 0.4
   max_throttle_force = mg * max_throttle_accel_g
   max_throttle_torque = max_throttle_force * wheel_radius
-  max_throttle_torque_front = 0.5 * weight_distribution[:front] * max_throttle_torque
-  max_throttle_torque_rear  = 0.5 * weight_distribution[:rear]  * max_throttle_torque
+  max_throttle_torque_front = max_throttle_torque
+  max_throttle_torque_rear  = 0
 %>
 <sdf version="1.6">
   <model name="prius_hybrid">
