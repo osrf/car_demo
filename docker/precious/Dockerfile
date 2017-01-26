@@ -18,12 +18,10 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_releas
  && apt-get install -y \
     libignition-transport3 \
     libignition-transport3-dev \
-    libignition-math2 \
-    libignition-math2-dev \
     libignition-math3 \
     libignition-math3-dev \
-    libsdformat4 \
-    libsdformat4-dev \
+    libsdformat5 \
+    libsdformat5-dev \
  && apt-get clean
 
 
