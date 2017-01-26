@@ -12,8 +12,8 @@
       <back_right_wheel>prius_hybrid::rear_right_wheel_joint</back_right_wheel>
       <steering_wheel>prius_hybrid::steering_joint</steering_wheel>
       <chassis_aero_force_gain>0.63045</chassis_aero_force_gain>
-      <front_torque>515.64026358</front_torque>
-      <back_torque>343.76017572000006</back_torque>
+      <front_torque>1718.8008786000003</front_torque>
+      <back_torque>0</back_torque>
       <front_brake_torque>1031.28052716</front_brake_torque>
       <back_brake_torque>687.5203514400001</back_brake_torque>
       <max_speed>37.998337013956565</max_speed>
@@ -30,7 +30,7 @@
     <pose>0 0 0.03 0 0 0</pose>
     <link name="chassis">
       <inertial>
-        <mass>1356.0</mass>
+        <mass>1326.0</mass>
         <pose>0 -0.266 0.48 0 0 0</pose>
         <inertia>
           <ixx>2581.13354740</ixx>
@@ -252,7 +252,8 @@
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
+              <min_depth>0.001</min_depth>
+              <kp>1e9</kp>
             </ode>
           </contact>
         </surface>
@@ -306,7 +307,8 @@
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
+              <min_depth>0.001</min_depth>
+              <kp>1e9</kp>
             </ode>
           </contact>
         </surface>
@@ -361,7 +363,8 @@
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
+              <min_depth>0.001</min_depth>
+              <kp>1e9</kp>
             </ode>
           </contact>
         </surface>
@@ -414,7 +417,8 @@
           </friction>
           <contact>
             <ode>
-              <min_depth>0.015</min_depth>
+              <min_depth>0.001</min_depth>
+              <kp>1e9</kp>
             </ode>
           </contact>
         </surface>
@@ -461,9 +465,54 @@
       </axis2>
     </joint>
 
+    <link name="rear_axle">
+      <pose>0 1.45 0.3 0 0 0</pose>
+      <inertial>
+        <mass>30.0</mass>
+        <inertia>
+          <ixx>0.08437499999999999</ixx>
+          <ixy>0.0</ixy>
+          <iyy>4.64581</iyy>
+          <ixz>0.0</ixz>
+          <iyz>0.0</iyz>
+          <izz>4.64581</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <pose>0.0 0.0 0.0 0 1.5707963267948966 0</pose>
+        <geometry>
+          <cylinder>
+            <length>1.357</length>
+            <radius>0.075</radius>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Grey</name>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+          </script>
+        </material>
+      </visual>
+    </link>
+
+    <joint type="revolute" name="rear_axle_joint">
+      <child>rear_axle</child>
+      <parent>chassis</parent>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.05089058524173028</lower>
+          <upper>0.05089058524173028</upper>
+        </limit>
+        <dynamics>
+          <spring_stiffness>20000.0</spring_stiffness>
+          <damping>2000.0</damping>
+        </dynamics>
+      </axis>
+    </joint>
     <joint type="revolute" name="rear_left_wheel_joint">
       <child>rear_left_wheel</child>
-      <parent>chassis</parent>
+      <parent>rear_axle</parent>
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>
@@ -473,7 +522,7 @@
     </joint>
     <joint type="revolute" name="rear_right_wheel_joint">
       <child>rear_right_wheel</child>
-      <parent>chassis</parent>
+      <parent>rear_axle</parent>
       <axis>
         <xyz>1 0 0</xyz>
         <dynamics>
