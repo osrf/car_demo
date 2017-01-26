@@ -698,9 +698,9 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     case 65:
     case 97:
     {
-      this->dataPtr->handWheelCmd += 0.1;
-      this->dataPtr->handWheelCmd =
-          std::min(this->dataPtr->handWheelCmd, IGN_PI);
+      this->dataPtr->handWheelCmd += 0.25;
+      this->dataPtr->handWheelCmd = std::min(this->dataPtr->handWheelCmd,
+          this->dataPtr->handWheelHigh);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -708,9 +708,9 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     case 68:
     case 100:
     {
-      this->dataPtr->handWheelCmd -= 0.1;
-      this->dataPtr->handWheelCmd =
-          std::max(this->dataPtr->handWheelCmd, -IGN_PI);
+      this->dataPtr->handWheelCmd -= 0.25;
+      this->dataPtr->handWheelCmd = std::max(this->dataPtr->handWheelCmd,
+          this->dataPtr->handWheelLow);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -777,9 +777,9 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 65:
     case 97:
     {
-      this->dataPtr->handWheelCmd += 0.1;
-      this->dataPtr->handWheelCmd =
-          std::min(this->dataPtr->handWheelCmd, IGN_PI);
+      this->dataPtr->handWheelCmd += 0.25;
+      this->dataPtr->handWheelCmd = std::min(this->dataPtr->handWheelCmd,
+          this->dataPtr->handWheelHigh);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -801,9 +801,9 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 68:
     case 100:
     {
-      this->dataPtr->handWheelCmd -= 0.1;
-      this->dataPtr->handWheelCmd =
-          std::max(this->dataPtr->handWheelCmd, -IGN_PI);
+      this->dataPtr->handWheelCmd -= 0.25;
+      this->dataPtr->handWheelCmd = std::max(this->dataPtr->handWheelCmd,
+          this->dataPtr->handWheelLow);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }

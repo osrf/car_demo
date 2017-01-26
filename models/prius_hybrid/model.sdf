@@ -490,8 +490,8 @@
         <!--<xyz>0 1 0.84365</xyz>-->
         <xyz>0 0.964095 0.265556</xyz>
         <limit>
-          <lower>-3.14</lower>
-          <upper>3.14</upper>
+          <lower>-7.85</lower>
+          <upper>7.85</upper>
         </limit>
         <dynamics>
           <damping>1.0</damping>
