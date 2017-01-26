@@ -500,9 +500,13 @@
       <parent>chassis</parent>
       <axis>
         <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-0.05089058524173028</lower>
+          <upper>0.05089058524173028</upper>
+        </limit>
         <dynamics>
-          <spring_stiffness>50</spring_stiffness>
-          <damping>5.0</damping>
+          <spring_stiffness>20000.0</spring_stiffness>
+          <damping>2000.0</damping>
         </dynamics>
       </axis>
     </joint>

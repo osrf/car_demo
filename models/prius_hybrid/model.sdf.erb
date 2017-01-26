@@ -57,8 +57,9 @@
   rear_axle_radius = 0.075
   rear_axle_inertia_axial = 0.5 * masses[:rear_axle] * rear_axle_radius**2
   rear_axle_inertia_radial = masses[:rear_axle] * (0.25 * rear_axle_radius**2 + 1/12.0*rear_axle_length**2)
-  rear_axle_stiffness = 50
+  rear_axle_stiffness = 20e3
   rear_axle_damping = 0.1 * rear_axle_stiffness
+  rear_axle_limit = 0.04 / track_half_width_rear
 
   # max speed at which torque can be applied at wheels
   max_speed_mph = 85
@@ -590,6 +591,10 @@
       <parent>chassis</parent>
       <axis>
         <xyz>0 1 0</xyz>
+        <limit>
+          <lower><%= -rear_axle_limit %></lower>
+          <upper><%= rear_axle_limit %></upper>
+        </limit>
         <dynamics>
           <spring_stiffness><%= rear_axle_stiffness %></spring_stiffness>
           <damping><%= rear_axle_damping %></damping>
