@@ -1002,6 +1002,17 @@ void PriusHybridPlugin::Update()
   // this->dataPtr->frWheelSteeringJoint->SetHighStop(0,
   // this->dataPtr->frWheelSteeringCmd);
 
+  //static common::Time lastErrorPrintTime = 0.0;
+  //if (curTime - lastErrorPrintTime > 0.01 || curTime < lastErrorPrintTime)
+  //{
+  //  lastErrorPrintTime = curTime;
+  //  double maxSteerError =
+  //    std::abs(frwsError) > std::abs(flwsError) ? frwsError : flwsError;
+  //  double maxSteerErrPer = maxSteerError / this->dataPtr->maxSteer * 100.0;
+  //  std::cerr << std::fixed << "Max steering error: " << maxSteerErrPer
+  //    << std::endl;
+  //}
+
   // Gas pedal torque.
   // Map gas torques to individual wheels.
   // Cut off gas torque at a given wheel if max speed is exceeded.
