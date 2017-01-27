@@ -87,27 +87,17 @@ UploadDataPlugin::UploadDataPlugin()
 /////////////////////////////////////////////////
 UploadDataPlugin::~UploadDataPlugin()
 {
-  std::cerr << "Upload data plugin destructor" << std::endl;
-  if (!this->dataPtr->uploaded)
-  {
-    std::cout << "Uploading data before exiting" << std::endl;
-    ignition::msgs::StringMsg req;
-    ignition::msgs::StringMsg rep;
-    bool result = false;
-    req.set_data("/tmp/prius_data.txt");
-    this->dataPtr->Upload(req, rep, result);
-    std::cout << "Upload result: " << result << std::endl;
-    std::cout << rep.data() << std::endl;
+  if (this->dataPtr->uploaded)
+    return;
 
-  }
+  auto pub = this->dataPtr->node.Advertise<ignition::msgs::Any>("/prius/stop");
+  ignition::msgs::Any msg;
+  pub.Publish(msg);
 }
 
 /////////////////////////////////////////////////
 void UploadDataPlugin::Load(int _argc, char **_argv)
 {
-  // ignition::common::Console::SetQuiet(false);
-  std::cerr<< "Loading UploadDataPlugin" << std::endl;
-
   // Advertise a service call.
   std::string service = "/priuscup/upload";
   if (!this->dataPtr->node.Advertise(service,
@@ -144,7 +134,6 @@ void UploadDataPluginPrivate::Upload(const ignition::msgs::StringMsg &_req,
     return;
   }
   std::string scriptPath = common::find_file("upload.py");
-  std::cerr << " scriptPath " << scriptPath << std::endl;
   if (scriptPath.empty())
   {
     std::cerr << "Unable to find upload script" << std::endl;
