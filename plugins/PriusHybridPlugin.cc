@@ -274,10 +274,16 @@ namespace gazebo
 
     /// \brief Publisher for the world_control topic.
     public: transport::PublisherPtr worldControlPub;
+
+    /// \brief Path to prius data log file.
+    public: static const std::string PRIUS_DATA_SYMLINK;
   };
 }
 
 using namespace gazebo;
+
+const std::string PriusHybridPluginPrivate::PRIUS_DATA_SYMLINK =
+    "/tmp/prius_data.txt";
 
 /////////////////////////////////////////////////
 PriusHybridPlugin::PriusHybridPlugin()
@@ -318,6 +324,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->dataPtr->node.Subscribe("/prius/reset",
       &PriusHybridPlugin::OnReset, this);
+  this->dataPtr->node.Subscribe("/prius/stop",
+      &PriusHybridPlugin::OnStop, this);
 
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
   this->dataPtr->node.Subscribe("/cmd_gear",
@@ -565,7 +573,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   double handWheelForce = 1;
   this->dataPtr->handWheelPID.Init(100, 0, 0, 0, 0,
       handWheelForce, -handWheelForce);
-
   // Max force that can be applied to wheel steering joints
   double kMaxSteeringForceMagnitude = 5000;
 
@@ -602,7 +609,7 @@ void PriusHybridPlugin::RunLogger()
   this->dataPtr->loggerStream << "# Timestamp, gear, odom, mph, mpg\n";
   this->dataPtr->loggerStream.flush();
 
-  std::string symlinkName = "/tmp/prius_data.txt";
+  std::string symlinkName = PriusHybridPluginPrivate::PRIUS_DATA_SYMLINK;
   std::remove(symlinkName.c_str());
   int code = symlink(filename.c_str(), symlinkName.c_str());
   if (code < 0)
@@ -865,6 +872,27 @@ void PriusHybridPlugin::OnReset(const ignition::msgs::Any & /*_msg*/)
   msg.mutable_reset()->set_all(true);
 
   this->dataPtr->worldControlPub->Publish(msg);
+}
+
+/////////////////////////////////////////////////
+void PriusHybridPlugin::OnStop(const ignition::msgs::Any & /*_msg*/)
+{
+  ignition::msgs::StringMsg req;
+  req.set_data(PriusHybridPluginPrivate::PRIUS_DATA_SYMLINK);
+  ignition::msgs::StringMsg rep;
+  bool result = false;
+  unsigned int timeout = 5000;
+  bool executed = this->dataPtr->node.Request("/priuscup/upload",
+      req, timeout, rep, result);
+  if (executed)
+  {
+    std::cerr << "Result: " << result << std::endl;
+    std::cerr << rep.data() << std::endl;
+  }
+  else
+  {
+    std::cerr << "Service call timed out" << std::endl;
+  }
 }
 
 /////////////////////////////////////////////////
