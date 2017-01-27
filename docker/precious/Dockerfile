@@ -8,8 +8,10 @@ FROM cloudsim-sim-base:xenial
 RUN apt-get update \
  && apt-get install -y \
     gdb \
+    python-pip \
  && apt-get clean
 
+RUN pip install boto
 
 # Get stable dependencies first
 RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list \
