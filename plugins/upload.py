@@ -11,8 +11,6 @@ filename = str(sys.argv[1])
 AWS_ACCESS_KEY_ID = str(sys.argv[2])
 AWS_SECRET_ACCESS_KEY = str(sys.argv[3])
 
-print 'upload.py: AWS %s %s' % (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-
 bucket_name = 'priusdata'
 conn = boto.connect_s3(AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY)

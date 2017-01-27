@@ -6,6 +6,8 @@ function cleanup {
 }
 trap cleanup EXIT
 
+source /code/aws_s3.bash
+
 source /usr/share/priuscup/setup.sh
 ignition --run /opt/priuscup/prius.ign &
-gzserver --verbose --server-plugin libMaxTimeToLivePlugin.so --lifespan=2700 /usr/share/priuscup-0/worlds/raceway.world
+gzserver --verbose --server-plugin libUploadDataPlugin.so --server-plugin libMaxTimeToLivePlugin.so --lifespan=2700 /usr/share/priuscup-0/worlds/raceway.world
