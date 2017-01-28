@@ -6,7 +6,8 @@ function cleanup {
 }
 trap cleanup EXIT
 
-source /code/aws_s3.bash
+source /code/aws_s3_user.bash
+source /code/aws_s3_keys.bash
 
 source /usr/share/priuscup/setup.sh
 ignition --run /opt/priuscup/prius.ign &

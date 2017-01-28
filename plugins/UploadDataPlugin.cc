@@ -133,6 +133,12 @@ void UploadDataPluginPrivate::Upload(const ignition::msgs::StringMsg &_req,
     _result = false;
     return;
   }
+  std::string targetname = "prius_data.txt";
+  const char *target = common::getEnv("PRIUS_USER_ID");
+  if (target)
+  {
+    targetname = std::string(target) + "_" + targetname;
+  }
   std::string scriptPath = common::find_file("upload.py");
   if (scriptPath.empty())
   {
@@ -140,7 +146,7 @@ void UploadDataPluginPrivate::Upload(const ignition::msgs::StringMsg &_req,
     return;
   }
   std::string uploadCmdStr = "python " + scriptPath + " "
-      + filename + " " + id + " " + secret;
+      + filename + " " + targetname + " " +  id + " " + secret;
   std::string out = custom_exec(uploadCmdStr);
   _rep.set_data(out);
   _result = true;
