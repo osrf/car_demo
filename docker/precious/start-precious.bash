@@ -6,7 +6,10 @@ function cleanup {
 }
 trap cleanup EXIT
 
+# get the username from cloudsim-options.json
 source /code/aws_s3_user.bash
+
+# AWS credentials
 source /code/aws_s3_keys.bash
 
 source /usr/share/priuscup/setup.sh

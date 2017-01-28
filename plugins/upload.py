@@ -18,7 +18,6 @@ conn = boto.connect_s3(AWS_ACCESS_KEY_ID,
 
 
 bucket = conn.get_bucket(bucket_name)
-#    location=boto.s3.connection.Location.DEFAULT)
 
 print 'Uploading %s to Amazon S3 bucket %s' % \
    (filename, bucket_name)

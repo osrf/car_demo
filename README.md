@@ -49,6 +49,12 @@ cd priuscup/aws
 ```
 After a few seconds a firefox window will open to `127.0.0.1`
 
+### S3 bucket file upload
+
+1. To enable prius data file uploads to s3 bucket, create an `aws_s3_keys.bash`
+file in `priuscup/aws` and export `AWS_ACCESS_KEY_ID` and
+`AWS_SECRET_ACCESS_KEY` variables.
+
 ## Deploying to AWS
 1. Start a g2.2xlarge instance with the AMI *ubuntu-nvidia-docker-16GiB* *ami-b71142d7*
 2. Use the following script to copy the image to the instance
