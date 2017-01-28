@@ -142,7 +142,9 @@ void UploadDataPluginPrivate::Upload(const ignition::msgs::StringMsg &_req,
   std::string scriptPath = common::find_file("upload.py");
   if (scriptPath.empty())
   {
-    std::cerr << "Unable to find upload script" << std::endl;
+     std::string errorMsg = "Unable to find upload script";
+    _rep.set_data(errorMsg);
+    _result = false;
     return;
   }
   std::string uploadCmdStr = "python " + scriptPath + " "
