@@ -562,8 +562,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   //   << " " << this->dataPtr->backTrackWidth << std::endl;
 
   // Max force that can be applied to hand steering wheel
-  double handWheelForce = 1;
-  this->dataPtr->handWheelPID.Init(100, 0, 0, 0, 0,
+  double handWheelForce = 10;
+  this->dataPtr->handWheelPID.Init(100, 0, 10, 0, 0,
       handWheelForce, -handWheelForce);
 
   // Max force that can be applied to wheel steering joints
@@ -1001,6 +1001,17 @@ void PriusHybridPlugin::Update()
   // this->dataPtr->frWheelSteeringCmd);
   // this->dataPtr->frWheelSteeringJoint->SetHighStop(0,
   // this->dataPtr->frWheelSteeringCmd);
+
+  //static common::Time lastErrorPrintTime = 0.0;
+  //if (curTime - lastErrorPrintTime > 0.01 || curTime < lastErrorPrintTime)
+  //{
+  //  lastErrorPrintTime = curTime;
+  //  double maxSteerError =
+  //    std::abs(frwsError) > std::abs(flwsError) ? frwsError : flwsError;
+  //  double maxSteerErrPer = maxSteerError / this->dataPtr->maxSteer * 100.0;
+  //  std::cerr << std::fixed << "Max steering error: " << maxSteerErrPer
+  //    << std::endl;
+  //}
 
   // Gas pedal torque.
   // Map gas torques to individual wheels.
