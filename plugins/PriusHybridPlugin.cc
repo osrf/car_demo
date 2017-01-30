@@ -209,6 +209,9 @@ namespace gazebo
     /// \brief Battery state-of-charge (percent, 0.0 - 1.0)
     public: double batteryCharge = 0.75;
 
+    /// \brief Whether EV mode is on or off.
+    public: bool evMode = false;
+
     /// \brief Gas pedal position in percentage. 1.0 = Fully accelerated.
     public: double gasPedalPercent = 0;
 
@@ -250,9 +253,6 @@ namespace gazebo
 
     /// \brief Odometer
     public: double odom = 0.0;
-
-    /// \brief EV mode, on or off
-    public: bool modeEV = false;
 
     /// \brief Mutex to protect logger writes
     public: std::mutex loggerMutex;
@@ -670,7 +670,7 @@ void PriusHybridPlugin::OnCmdMode(const ignition::msgs::Boolean &/*_msg*/)
 {
   // toggle ev mode
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  this->dataPtr->modeEV = !this->dataPtr->modeEV;
+  this->dataPtr->evMode = !this->dataPtr->evMode;
 }
 
 /////////////////////////////////////////////////
@@ -847,7 +847,7 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
       common::Time now = this->dataPtr->world->SimTime();
       if ((now - this->dataPtr->lastModeCmdTime).Double() > 0.3)
       {
-        this->dataPtr->modeEV = !this->dataPtr->modeEV;
+        this->dataPtr->evMode = !this->dataPtr->evMode;
         this->dataPtr->lastModeCmdTime = now;
       }
       break;
@@ -1145,8 +1145,8 @@ void PriusHybridPlugin::Update()
     // Miles
     consoleMsg.add_data(this->dataPtr->odom);
 
-    // EV mode. 0 = OFF, 1 = ON
-    consoleMsg.add_data(static_cast<int>(this->dataPtr->modeEV));
+    // EV mode
+    this->dataPtr->evMode ? consoleMsg.add_data(1.0) : consoleMsg.add_data(0.0);
 
     this->dataPtr->consolePub.Publish(consoleMsg);
 
