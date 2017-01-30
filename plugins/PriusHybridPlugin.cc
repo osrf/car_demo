@@ -118,6 +118,9 @@ namespace gazebo
     /// \brief Last sim time when a steering command is received
     public: common::Time lastSteeringCmdTime;
 
+    /// \brief Last sim time when a EV mode command is received
+    public: common::Time lastModeCmdTime;
+
     /// \brief Current direction of the vehicle: FORWARD, NEUTRAL, REVERSE.
     public: DirectionType directionState;
 
@@ -248,6 +251,9 @@ namespace gazebo
     /// \brief Odometer
     public: double odom = 0.0;
 
+    /// \brief EV mode, on or off
+    public: bool modeEV = false;
+
     /// \brief Mutex to protect logger writes
     public: std::mutex loggerMutex;
 
@@ -322,6 +328,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
   this->dataPtr->node.Subscribe("/cmd_gear",
       &PriusHybridPlugin::OnCmdGear, this);
+  this->dataPtr->node.Subscribe("/cmd_mode",
+      &PriusHybridPlugin::OnCmdMode, this);
 
   this->dataPtr->posePub = this->dataPtr->node.Advertise<ignition::msgs::Pose>(
       "/prius/pose");
@@ -658,6 +666,14 @@ void PriusHybridPlugin::OnCmdGear(const ignition::msgs::Int32 &_msg)
 }
 
 /////////////////////////////////////////////////
+void PriusHybridPlugin::OnCmdMode(const ignition::msgs::Boolean &/*_msg*/)
+{
+  // toggle ev mode
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  this->dataPtr->modeEV = !this->dataPtr->modeEV;
+}
+
+/////////////////////////////////////////////////
 void PriusHybridPlugin::KeyControlTypeA(const int _key)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
@@ -821,6 +837,19 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 120:
     {
       this->dataPtr->directionState = PriusHybridPluginPrivate::NEUTRAL;
+      break;
+    }
+    // q - EV mode
+    case 81:
+    case 113:
+    {
+      // avoid rapid mode changes due to repeated key press
+      common::Time now = this->dataPtr->world->SimTime();
+      if ((now - this->dataPtr->lastModeCmdTime).Double() > 0.3)
+      {
+        this->dataPtr->modeEV = !this->dataPtr->modeEV;
+        this->dataPtr->lastModeCmdTime = now;
+      }
       break;
     }
     default:
@@ -1115,6 +1144,9 @@ void PriusHybridPlugin::Update()
 
     // Miles
     consoleMsg.add_data(this->dataPtr->odom);
+
+    // EV mode. 0 = OFF, 1 = ON
+    consoleMsg.add_data(static_cast<int>(this->dataPtr->modeEV));
 
     this->dataPtr->consolePub.Publish(consoleMsg);
 
