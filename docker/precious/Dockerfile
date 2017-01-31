@@ -44,6 +44,8 @@ RUN mkdir /opt/priuscup
 COPY start-precious.bash /opt/priuscup/start-precious.bash
 RUN chmod a+x /opt/priuscup/start-precious.bash
 COPY prius.ign /opt/priuscup/prius.ign
+COPY aws_s3_user.bash /opt/priuscup/aws_s3_user.bash
+RUN chmod a+x /opt/priuscup/aws_s3_user.bash
 
 # add a user with my id
 ARG user_id
