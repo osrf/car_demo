@@ -45,7 +45,6 @@ COPY start-precious.bash /opt/priuscup/start-precious.bash
 RUN chmod a+x /opt/priuscup/start-precious.bash
 COPY prius.ign /opt/priuscup/prius.ign
 
-
 # add a user with my id
 ARG user_id
 ENV USERNAME precious

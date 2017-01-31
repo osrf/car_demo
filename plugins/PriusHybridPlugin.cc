@@ -110,6 +110,9 @@ namespace gazebo
     /// \brief Last sim time when a steering command is received
     public: common::Time lastSteeringCmdTime;
 
+    /// \brief Last sim time when a EV mode command is received
+    public: common::Time lastModeCmdTime;
+
     /// \brief Current direction of the vehicle: FORWARD, NEUTRAL, REVERSE.
     public: DirectionType directionState;
 
@@ -198,8 +201,30 @@ namespace gazebo
     /// \brief Battery state-of-charge (percent, 0.0 - 1.0)
     public: double batteryCharge = 0.75;
 
+    /// \brief Battery charge threshold when it has to be recharged.
+    public: const double batteryLowThreshold = 0.1;
+
+    /// \brief Whether EV mode is on or off.
+    public: bool evMode = false;
+
     /// \brief Gas pedal position in percentage. 1.0 = Fully accelerated.
     public: double gasPedalPercent = 0;
+
+    /// \brief Threshold delimiting the gas pedal (throttle) low and medium
+    /// ranges.
+    public: const double gasPedalLowMedium = 0.2;
+
+    /// \brief Threshold delimiting the gas pedal (throttle) medium and high
+    /// ranges.
+    public: const double gasPedalMediumHigh = 0.5;
+
+    /// \brief Threshold delimiting the speed (throttle) low and medium
+    /// ranges in miles/h.
+    public: const double speedLowMedium = 25.0;
+
+    /// \brief Threshold delimiting the speed (throttle) medium and high
+    /// ranges in miles/h.
+    public: const double speedMediumHigh = 45.0;
 
     /// \brief Brake pedal position in percentage. 1.0 =
     public: double brakePedalPercent = 0;
@@ -298,6 +323,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
   this->dataPtr->node.Subscribe("/cmd_gear",
       &PriusHybridPlugin::OnCmdGear, this);
+  this->dataPtr->node.Subscribe("/cmd_mode",
+      &PriusHybridPlugin::OnCmdMode, this);
 
   this->dataPtr->posePub = this->dataPtr->node.Advertise<ignition::msgs::Pose>(
       "/prius/pose");
@@ -595,6 +622,14 @@ void PriusHybridPlugin::OnCmdGear(const ignition::msgs::Int32 &_msg)
 }
 
 /////////////////////////////////////////////////
+void PriusHybridPlugin::OnCmdMode(const ignition::msgs::Boolean &/*_msg*/)
+{
+  // toggle ev mode
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  this->dataPtr->evMode = !this->dataPtr->evMode;
+}
+
+/////////////////////////////////////////////////
 void PriusHybridPlugin::KeyControlTypeA(const int _key)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
@@ -635,9 +670,9 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     case 65:
     case 97:
     {
-      this->dataPtr->handWheelCmd += 0.1;
-      this->dataPtr->handWheelCmd =
-          std::min(this->dataPtr->handWheelCmd, IGN_PI);
+      this->dataPtr->handWheelCmd += 0.25;
+      this->dataPtr->handWheelCmd = std::min(this->dataPtr->handWheelCmd,
+          this->dataPtr->handWheelHigh);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -645,9 +680,9 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     case 68:
     case 100:
     {
-      this->dataPtr->handWheelCmd -= 0.1;
-      this->dataPtr->handWheelCmd =
-          std::max(this->dataPtr->handWheelCmd, -IGN_PI);
+      this->dataPtr->handWheelCmd -= 0.25;
+      this->dataPtr->handWheelCmd = std::max(this->dataPtr->handWheelCmd,
+          this->dataPtr->handWheelLow);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -714,9 +749,9 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 65:
     case 97:
     {
-      this->dataPtr->handWheelCmd += 0.1;
-      this->dataPtr->handWheelCmd =
-          std::min(this->dataPtr->handWheelCmd, IGN_PI);
+      this->dataPtr->handWheelCmd += 0.25;
+      this->dataPtr->handWheelCmd = std::min(this->dataPtr->handWheelCmd,
+          this->dataPtr->handWheelHigh);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -738,9 +773,9 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 68:
     case 100:
     {
-      this->dataPtr->handWheelCmd -= 0.1;
-      this->dataPtr->handWheelCmd =
-          std::max(this->dataPtr->handWheelCmd, -IGN_PI);
+      this->dataPtr->handWheelCmd -= 0.25;
+      this->dataPtr->handWheelCmd = std::max(this->dataPtr->handWheelCmd,
+          this->dataPtr->handWheelLow);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -758,6 +793,19 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 120:
     {
       this->dataPtr->directionState = PriusHybridPluginPrivate::NEUTRAL;
+      break;
+    }
+    // q - EV mode
+    case 81:
+    case 113:
+    {
+      // avoid rapid mode changes due to repeated key press
+      common::Time now = this->dataPtr->world->SimTime();
+      if ((now - this->dataPtr->lastModeCmdTime).Double() > 0.3)
+      {
+        this->dataPtr->evMode = !this->dataPtr->evMode;
+        this->dataPtr->lastModeCmdTime = now;
+      }
       break;
     }
     default:
@@ -998,6 +1046,8 @@ void PriusHybridPlugin::Update()
   double backGasMechanicalPower =
       std::abs(blGasTorque * dPtr->blWheelAngularVelocity) +
       std::abs(brGasTorque * dPtr->brWheelAngularVelocity);
+
+  // TODO: Move this logic below
   dPtr->gasConsumption += dt / dPtr->kGasEfficiency / dPtr->kGasEnergyDensity
       * (frontGasMechanicalPower + backGasMechanicalPower);
 
@@ -1044,6 +1094,65 @@ void PriusHybridPlugin::Update()
   // Distance traveled in miles.
   this->dataPtr->odom += (fabs(linearVel) * dt/3600.0);
 
+  // Battery
+
+  // Speed x throttle regions
+  //
+  //    throttle |
+  //             |
+  //        high |____
+  //             |    |
+  //      medium |____|_____
+  //             |    |     |
+  //         low |____|_____|_________
+  //              low  med   high    speed
+
+  // Battery is below threshold
+  if (this->dataPtr->batteryCharge < this->dataPtr->batteryLowThreshold)
+  {
+    // Gas engine is on and recharing battery
+
+    // this->dataPtr->gasConsumption += ...
+    // this->dataPtr->batteryCharge += ...
+  }
+  // Neutral and battery not low
+  else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
+  {
+    // Gas engine is off, battery not recharged
+  }
+  // Speed below medium-high threshold, throttle below low-medium threshold
+  else if (linearVel < this->dataPtr->speedMediumHigh &&
+      this->dataPtr->gasPedalPercent < this->dataPtr->gasPedalLowMedium)
+  {
+    // Gas engine is off, running on battery
+
+    // this->dataPtr->batteryCharge -= ...
+  }
+  // EV mode, speed below low-medium threshold, throttle below medium-high
+  // threshold
+  else if (this->dataPtr->evMode && linearVel < this->dataPtr->speedLowMedium
+      && this->dataPtr->gasPedalPercent < this->dataPtr->gasPedalMediumHigh)
+  {
+    // Gas engine is off, running on battery
+
+    // this->dataPtr->batteryCharge -= ...
+  }
+  // Regenerative breaking, unless on neutral
+  else if (this->dataPtr->directionState != PriusHybridPluginPrivate::NEUTRAL &&
+      this->dataPtr->brakePedalPercent > 0)
+  {
+    // Gas engine is on, battery is being recharged
+
+    // this->dataPtr->gasConsumption += ...
+    // this->dataPtr->batteryCharge += ...
+  }
+  else
+  {
+    // Gas engine is on
+
+    // this->dataPtr->gasConsumption += ...
+  }
+
   // Accumulated mpg since last reset
   // max value: 99.9
   double mpg = std::min(99.9,
@@ -1069,6 +1178,12 @@ void PriusHybridPlugin::Update()
 
     // Miles
     consoleMsg.add_data(this->dataPtr->odom);
+
+    // EV mode
+    // this->dataPtr->evMode ? consoleMsg.add_data(1.0) : consoleMsg.add_data(0.0);
+
+    // Battery state
+    // consoleMsg.add_data(this->dataPtr->batteryCharge);
 
     this->dataPtr->consolePub.Publish(consoleMsg);
 
