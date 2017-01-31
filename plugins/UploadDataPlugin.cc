@@ -80,7 +80,7 @@ std::string custom_exec(std::string _cmd)
 
 /////////////////////////////////////////////////
 UploadDataPlugin::UploadDataPlugin()
-	: dataPtr(new UploadDataPluginPrivate)
+    : dataPtr(new UploadDataPluginPrivate)
 {
 }
 
