@@ -27,18 +27,10 @@
 #include <gazebo/common/PID.hh>
 #include <gazebo/common/Time.hh>
 #include "PriusHybridPlugin.hh"
+#include "PriusLogger.hh"
 
 namespace gazebo
 {
-  class PriusData
-  {
-    public: double timestamp = 0.0;
-    public: double odom = 0.0;
-    public: double mph = 0.0;
-    public: double mpg = 0.0;
-    public: std::string gear = "drive";
-  };
-
   class PriusHybridPluginPrivate
   {
     /// \enum DirectionType
@@ -209,11 +201,30 @@ namespace gazebo
     /// \brief Battery state-of-charge (percent, 0.0 - 1.0)
     public: double batteryCharge = 0.75;
 
+    /// \brief Battery charge threshold when it has to be recharged.
+    public: const double batteryLowThreshold = 0.1;
+
     /// \brief Whether EV mode is on or off.
     public: bool evMode = false;
 
     /// \brief Gas pedal position in percentage. 1.0 = Fully accelerated.
     public: double gasPedalPercent = 0;
+
+    /// \brief Threshold delimiting the gas pedal (throttle) low and medium
+    /// ranges.
+    public: const double gasPedalLowMedium = 0.2;
+
+    /// \brief Threshold delimiting the gas pedal (throttle) medium and high
+    /// ranges.
+    public: const double gasPedalMediumHigh = 0.5;
+
+    /// \brief Threshold delimiting the speed (throttle) low and medium
+    /// ranges in miles/h.
+    public: const double speedLowMedium = 25.0;
+
+    /// \brief Threshold delimiting the speed (throttle) medium and high
+    /// ranges in miles/h.
+    public: const double speedMediumHigh = 45.0;
 
     /// \brief Brake pedal position in percentage. 1.0 =
     public: double brakePedalPercent = 0;
@@ -254,26 +265,8 @@ namespace gazebo
     /// \brief Odometer
     public: double odom = 0.0;
 
-    /// \brief Mutex to protect logger writes
-    public: std::mutex loggerMutex;
-
-    /// \brief Thread to log data
-    public: std::unique_ptr<std::thread> loggerThread;
-
-    /// \brief Time last data were pushed to logger
-    public: common::Time lastLoggerWriteTime;
-
-    /// \brief List of data to write to file
-    public: std::list<PriusData> dataPoints;
-
-    /// \brief Flag used to determine when to quit the logger thread
-    public: bool quitLogging = false;
-
-    /// \brief Logger stream that writes to file
-    public: std::ofstream loggerStream;
-
-    /// \brief Rate (hz) at which data are logged.
-    public: double logRate = 1;
+    // \brief Object that writes log files
+    public: std::unique_ptr<priuscup::PriusLogger> logger;
 
     /// \brief Keyboard control type
     public: int keyControl = 1;
@@ -294,18 +287,12 @@ PriusHybridPlugin::PriusHybridPlugin()
   this->dataPtr->frWheelRadius = 0.3;
   this->dataPtr->blWheelRadius = 0.3;
   this->dataPtr->brWheelRadius = 0.3;
-
-  // hz
-  this->dataPtr->logRate = 20;
 }
 
 /////////////////////////////////////////////////
 PriusHybridPlugin::~PriusHybridPlugin()
 {
   this->dataPtr->updateConnection.reset();
-  this->dataPtr->quitLogging = true;
-  this->dataPtr->loggerThread->join();
-  this->dataPtr->loggerThread.reset();
 }
 
 /////////////////////////////////////////////////
@@ -583,9 +570,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->frWheelSteeringPID.SetCmdMax(kMaxSteeringForceMagnitude);
   this->dataPtr->frWheelSteeringPID.SetCmdMin(-kMaxSteeringForceMagnitude);
 
-  this->dataPtr->loggerThread.reset(new std::thread(
-      std::bind(&PriusHybridPlugin::RunLogger, this)));
-
   this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
       std::bind(&PriusHybridPlugin::Update, this));
 
@@ -598,46 +582,10 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->dataPtr->node.Subscribe("/keypress", &PriusHybridPlugin::OnKeyPressIgn,
       this);
-}
 
-/////////////////////////////////////////////////
-void PriusHybridPlugin::RunLogger()
-{
-  std::string filename = std::string("/tmp/prius_data-") +
-    gazebo::common::Time::GetWallTimeAsISOString();
-
-  this->dataPtr->loggerStream.open(filename.c_str());
-  this->dataPtr->loggerStream << "# Timestamp, gear, odom, mph, mpg\n";
-  this->dataPtr->loggerStream.flush();
-
-  std::string symlinkName = "/tmp/prius_data.txt";
-  std::remove(symlinkName.c_str());
-  int code = symlink(filename.c_str(), symlinkName.c_str());
-  if (code < 0)
-    std::cerr << "Error creating prius_data.txt symlink" << std::endl;
-
-  while (!this->dataPtr->quitLogging)
-  {
-    common::Time::MSleep(200);
-    std::lock_guard<std::mutex> loggerLock(this->dataPtr->loggerMutex);
-
-    // write to file
-    while (!this->dataPtr->dataPoints.empty())
-    {
-      auto data = this->dataPtr->dataPoints.front();
-      this->dataPtr->dataPoints.pop_front();
-      this->dataPtr->loggerStream
-          << std::fixed
-          << data.timestamp << ", "
-          << data.gear << ", "
-          << data.odom << ", "
-          << data.mph << ", "
-          << data.mpg << "\n";
-    }
-    this->dataPtr->loggerStream.flush();
-  }
-
-  this->dataPtr->loggerStream.close();
+  this->dataPtr->logger.reset(new priuscup::PriusLogger(
+        "/tmp/prius_data.txt", 20));
+  this->dataPtr->logger->Start();
 }
 
 /////////////////////////////////////////////////
@@ -924,16 +872,9 @@ void PriusHybridPlugin::Reset()
   this->dataPtr->blWheelAngularVelocity = 0;
   this->dataPtr->brWheelAngularVelocity  = 0;
 
-  // Stop the current logging thread.
-  this->dataPtr->quitLogging = true;
-  this->dataPtr->loggerThread->join();
-  this->dataPtr->loggerThread.reset();
-  this->dataPtr->dataPoints.clear();
-  this->dataPtr->quitLogging = false;
-
-  // Start a new logger thread.
-  this->dataPtr->loggerThread.reset(new std::thread(
-        std::bind(&PriusHybridPlugin::RunLogger, this)));
+  // restart the logger
+  this->dataPtr->logger->Stop();
+  this->dataPtr->logger->Start();
 }
 
 /////////////////////////////////////////////////
@@ -1073,6 +1014,8 @@ void PriusHybridPlugin::Update()
   double backGasMechanicalPower =
       std::abs(blGasTorque * dPtr->blWheelAngularVelocity) +
       std::abs(brGasTorque * dPtr->brWheelAngularVelocity);
+
+  // TODO: Move this logic below
   dPtr->gasConsumption += dt / dPtr->kGasEfficiency / dPtr->kGasEnergyDensity
       * (frontGasMechanicalPower + backGasMechanicalPower);
 
@@ -1119,6 +1062,65 @@ void PriusHybridPlugin::Update()
   // Distance traveled in miles.
   this->dataPtr->odom += (fabs(linearVel) * dt/3600.0);
 
+  // Battery
+
+  // Speed x throttle regions
+  //
+  //    throttle |
+  //             |
+  //        high |____
+  //             |    |
+  //      medium |____|_____
+  //             |    |     |
+  //         low |____|_____|_________
+  //              low  med   high    speed
+
+  // Battery is below threshold
+  if (this->dataPtr->batteryCharge < this->dataPtr->batteryLowThreshold)
+  {
+    // Gas engine is on and recharing battery
+
+    // this->dataPtr->gasConsumption += ...
+    // this->dataPtr->batteryCharge += ...
+  }
+  // Neutral and battery not low
+  else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
+  {
+    // Gas engine is off, battery not recharged
+  }
+  // Speed below medium-high threshold, throttle below low-medium threshold
+  else if (linearVel < this->dataPtr->speedMediumHigh &&
+      this->dataPtr->gasPedalPercent < this->dataPtr->gasPedalLowMedium)
+  {
+    // Gas engine is off, running on battery
+
+    // this->dataPtr->batteryCharge -= ...
+  }
+  // EV mode, speed below low-medium threshold, throttle below medium-high
+  // threshold
+  else if (this->dataPtr->evMode && linearVel < this->dataPtr->speedLowMedium
+      && this->dataPtr->gasPedalPercent < this->dataPtr->gasPedalMediumHigh)
+  {
+    // Gas engine is off, running on battery
+
+    // this->dataPtr->batteryCharge -= ...
+  }
+  // Regenerative breaking, unless on neutral
+  else if (this->dataPtr->directionState != PriusHybridPluginPrivate::NEUTRAL &&
+      this->dataPtr->brakePedalPercent > 0)
+  {
+    // Gas engine is on, battery is being recharged
+
+    // this->dataPtr->gasConsumption += ...
+    // this->dataPtr->batteryCharge += ...
+  }
+  else
+  {
+    // Gas engine is on
+
+    // this->dataPtr->gasConsumption += ...
+  }
+
   // Accumulated mpg since last reset
   // max value: 99.9
   double mpg = std::min(99.9,
@@ -1146,7 +1148,10 @@ void PriusHybridPlugin::Update()
     consoleMsg.add_data(this->dataPtr->odom);
 
     // EV mode
-    this->dataPtr->evMode ? consoleMsg.add_data(1.0) : consoleMsg.add_data(0.0);
+    // this->dataPtr->evMode ? consoleMsg.add_data(1.0) : consoleMsg.add_data(0.0);
+
+    // Battery state
+    // consoleMsg.add_data(this->dataPtr->batteryCharge);
 
     this->dataPtr->consolePub.Publish(consoleMsg);
 
@@ -1157,27 +1162,52 @@ void PriusHybridPlugin::Update()
     this->dataPtr->lastMsgTime = curTime;
   }
 
-  // push to logger list
-  std::lock_guard<std::mutex> loggerLock(this->dataPtr->loggerMutex);
-  if ((curTime - this->dataPtr->lastLoggerWriteTime).Double() >=
-      1.0/this->dataPtr->logRate)
+  if (this->dataPtr->logger->IsHungry(curTime))
   {
-    this->dataPtr->lastLoggerWriteTime = curTime;
+    priuscup::CarData data;
 
-    PriusData data;
+    // seconds since epoch
     data.timestamp = curTime.Double();
+    // How much is the accel pedal pressed
+    data.accelPedal = this->dataPtr->gasPedalPercent;
+    // Angle of steering in radians
+    double avgAngle =
+      (this->dataPtr->flWheelSteeringCmd + this->dataPtr->frWheelSteeringCmd)
+      / 2.0;
+    data.steerAngle = avgAngle;
+    // distance travelled in miles
     data.odom = this->dataPtr->odom;
-    data.mpg = mpg;
-    data.mph = linearVel;
+    // speed in m/s
+    data.mps = this->dataPtr->model->WorldLinearVel().Length();
+    // gas consumed so far in gallons
+    data.gasConsumed = this->dataPtr->gasConsumption;
+    // gear car is in
+    switch (this->dataPtr->directionState)
+    {
+      case PriusHybridPluginPrivate::FORWARD:
+        data.gear = 'D';
+        break;
+      case PriusHybridPluginPrivate::REVERSE:
+        data.gear = 'R';
+        break;
+      case PriusHybridPluginPrivate::NEUTRAL:
+        // fall through
+      default:
+        data.gear = 'N';
+    }
+    // true if the brake is applied
+    data.brake = this->dataPtr->brakePedalPercent > 0.01;
+    // true if in ev mode
+    data.evMode = false;  // TODO
+    bool engineIsOn = true;  // TODO engine RPM only if engine is on
+    // engine rpm rough fit of rpm vs throttle
+    data.rpm = (!engineIsOn) ? 0.0 : (1000.0 + 31.854 * 100.0 * data.accelPedal);
+    // angular z velocity
+    data.yawRate = this->dataPtr->chassisLink->RelativeAngularVel().Z();
+    // Battery SoC
+    data.soc = this->dataPtr->batteryCharge;
 
-    if (this->dataPtr->directionState == PriusHybridPluginPrivate::FORWARD)
-      data.gear = "drive";
-    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::REVERSE)
-      data.gear = "reverse";
-    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
-      data.gear = "neutral";
-
-    this->dataPtr->dataPoints.push_back(data);
+    this->dataPtr->logger->Feed(curTime, data);
   }
 }
 
