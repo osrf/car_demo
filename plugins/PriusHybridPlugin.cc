@@ -28,6 +28,7 @@
 #include <gazebo/common/Time.hh>
 #include "PriusHybridPlugin.hh"
 #include "PriusLogger.hh"
+#include "PriusData.hh"
 
 namespace gazebo
 {
@@ -273,16 +274,10 @@ namespace gazebo
 
     /// \brief Publisher for the world_control topic.
     public: transport::PublisherPtr worldControlPub;
-
-    /// \brief Path to prius data log file.
-    public: static const std::string PRIUS_DATA_PATH;
   };
 }
 
 using namespace gazebo;
-
-const std::string PriusHybridPluginPrivate::PRIUS_DATA_PATH =
-    "/tmp/prius_data.txt";
 
 /////////////////////////////////////////////////
 PriusHybridPlugin::PriusHybridPlugin()
@@ -592,7 +587,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       this);
 
   this->dataPtr->logger.reset(new priuscup::PriusLogger(
-        PriusHybridPluginPrivate::PRIUS_DATA_PATH, 20));
+        PRIUS_DATA_PATH, 20));
   this->dataPtr->logger->Start();
 }
 
@@ -859,7 +854,6 @@ void PriusHybridPlugin::OnStop(const ignition::msgs::Any & /*_msg*/)
   this->dataPtr->logger->Stop();
 
   ignition::msgs::StringMsg req;
-  req.set_data(PriusHybridPluginPrivate::PRIUS_DATA_PATH);
   ignition::msgs::StringMsg rep;
   bool result = false;
   unsigned int timeout = 5000;

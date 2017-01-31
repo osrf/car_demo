@@ -16,12 +16,15 @@
 */
 
 #include <string>
-#include "UploadDataPlugin.hh"
 
 #include <ignition/msgs/stringmsg.pb.h>
 #include <ignition/transport.hh>
 #include <ignition/common/Console.hh>
 #include <gazebo/gazebo.hh>
+
+
+#include "PriusData.hh"
+#include "UploadDataPlugin.hh"
 
 namespace gazebo
 {
@@ -116,7 +119,7 @@ void UploadDataPluginPrivate::Upload(const ignition::msgs::StringMsg &_req,
   if (this->uploaded)
     return;
 
-  std::string filename = _req.data();
+  std::string filename = PRIUS_DATA_PATH;
   if (filename.empty())
   {
      std::string errorMsg = "Missing filename";
