@@ -133,12 +133,13 @@ void UploadDataPluginPrivate::Upload(const ignition::msgs::StringMsg &_req,
     _result = false;
     return;
   }
+
+  std::string prefix = common::Time::GetWallTimeAsISOString();
   std::string targetname = "prius_data.txt";
-  const char *target = common::getEnv("PRIUS_USER_ID");
-  if (target)
-  {
-    targetname = std::string(target) + "_" + targetname;
-  }
+  const char *user = common::getEnv("PRIUS_USER_ID");
+  if (user)
+    prefix = std::string(user);
+  targetname = prefix + "_" + targetname;
   std::string scriptPath = common::find_file("upload.py");
   if (scriptPath.empty())
   {
