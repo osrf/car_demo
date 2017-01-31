@@ -73,6 +73,10 @@ namespace gazebo
     /// \param[in] _msg Int32 message data
     private: void OnCmdGear(const ignition::msgs::Int32 &_msg);
 
+    /// \brief Command to enable EV mode
+    /// \param[in] _msg Boolean message data
+    private: void OnCmdMode(const ignition::msgs::Boolean &_msg);
+
     /// \brief Command to reset the world
     /// \param[in] _msg Int32 message data. Not used
     private: void OnReset(const ignition::msgs::Any &_msg);

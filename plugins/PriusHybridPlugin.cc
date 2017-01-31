@@ -31,7 +31,6 @@
 
 namespace gazebo
 {
-
   class PriusHybridPluginPrivate
   {
     /// \enum DirectionType
@@ -110,6 +109,9 @@ namespace gazebo
 
     /// \brief Last sim time when a steering command is received
     public: common::Time lastSteeringCmdTime;
+
+    /// \brief Last sim time when a EV mode command is received
+    public: common::Time lastModeCmdTime;
 
     /// \brief Current direction of the vehicle: FORWARD, NEUTRAL, REVERSE.
     public: DirectionType directionState;
@@ -313,6 +315,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
   this->dataPtr->node.Subscribe("/cmd_gear",
       &PriusHybridPlugin::OnCmdGear, this);
+  this->dataPtr->node.Subscribe("/cmd_mode",
+      &PriusHybridPlugin::OnCmdMode, this);
 
   this->dataPtr->posePub = this->dataPtr->node.Advertise<ignition::msgs::Pose>(
       "/prius/pose");
@@ -582,7 +586,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->logger.reset(new priuscup::PriusLogger(
         "/tmp/prius_data.txt", 20));
   this->dataPtr->logger->Start();
-
 }
 
 /////////////////////////////////////////////////
@@ -608,6 +611,14 @@ void PriusHybridPlugin::OnCmdGear(const ignition::msgs::Int32 &_msg)
   state = ignition::math::clamp(state, -1, 1);
   this->dataPtr->directionState =
       static_cast<PriusHybridPluginPrivate::DirectionType>(state);
+}
+
+/////////////////////////////////////////////////
+void PriusHybridPlugin::OnCmdMode(const ignition::msgs::Boolean &/*_msg*/)
+{
+  // toggle ev mode
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  this->dataPtr->evMode = !this->dataPtr->evMode;
 }
 
 /////////////////////////////////////////////////
@@ -774,6 +785,19 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 120:
     {
       this->dataPtr->directionState = PriusHybridPluginPrivate::NEUTRAL;
+      break;
+    }
+    // q - EV mode
+    case 81:
+    case 113:
+    {
+      // avoid rapid mode changes due to repeated key press
+      common::Time now = this->dataPtr->world->SimTime();
+      if ((now - this->dataPtr->lastModeCmdTime).Double() > 0.3)
+      {
+        this->dataPtr->evMode = !this->dataPtr->evMode;
+        this->dataPtr->lastModeCmdTime = now;
+      }
       break;
     }
     default:
