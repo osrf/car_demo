@@ -16,7 +16,6 @@ bucket_name = 'priusdata'
 conn = boto.connect_s3(AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY)
 
-
 bucket = conn.get_bucket(bucket_name)
 
 print 'Uploading %s to Amazon S3 bucket %s' % \

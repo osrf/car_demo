@@ -4,5 +4,3 @@
 #define PRIUS_DATA_PATH "/tmp/prius_data.txt"
 
 #endif
-
-
