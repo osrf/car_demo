@@ -1138,7 +1138,6 @@ void PriusHybridPlugin::Update()
   bool regen = true;
   double batteryChargePower = 0;
   double batteryDischargePower = 0;
-  double gasPower = 0;
 
   // Battery is below threshold
   if (this->dataPtr->batteryCharge < this->dataPtr->batteryLowThreshold)
@@ -1148,9 +1147,6 @@ void PriusHybridPlugin::Update()
     this->dataPtr->evMode = false;
     batteryChargePower = dPtr->kLowBatteryChargePower;
     throttlePower += dPtr->kLowBatteryChargePower;
-
-    // this->dataPtr->gasConsumption += ...
-    // this->dataPtr->batteryCharge += ...
   }
   // Neutral and battery not low
   else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
@@ -1161,7 +1157,7 @@ void PriusHybridPlugin::Update()
   }
   // Speed below medium-high threshold, throttle below low-medium threshold
   else if (linearVel < this->dataPtr->speedMediumHigh &&
-      this->dataPtr->gasPedalPercent < this->dataPtr->kGasPedalLowMedium)
+      this->dataPtr->gasPedalPercent <= this->dataPtr->kGasPedalLowMedium)
   {
     // Gas engine is off, running on battery
     engineOn = false;
@@ -1170,8 +1166,7 @@ void PriusHybridPlugin::Update()
   // EV mode, speed below low-medium threshold, throttle below medium-high
   // threshold
   else if (this->dataPtr->evMode && linearVel < this->dataPtr->speedLowMedium
-      && this->dataPtr->evMode
-      && this->dataPtr->gasPedalPercent < this->dataPtr->kGasPedalMediumHigh)
+      && this->dataPtr->gasPedalPercent <= this->dataPtr->kGasPedalMediumHigh)
   {
     // Gas engine is off, running on battery
     engineOn = false;
@@ -1198,6 +1193,10 @@ void PriusHybridPlugin::Update()
   dPtr->batteryCharge += dt / 3600 * (
       batteryChargePower / dPtr->batteryChargeWattHours
     - batteryDischargePower / dPtr->batteryDischargeWattHours);
+  if (dPtr->batteryCharge > 1)
+  {
+    dPtr->batteryCharge = 1;
+  }
 
   // engine has minimum gas flow if the throttle is pressed at all
   if (engineOn && throttlePower > 0)
