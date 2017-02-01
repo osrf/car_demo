@@ -1234,7 +1234,7 @@ void PriusHybridPlugin::Update()
     this->dataPtr->evMode ? consoleMsg.add_data(1.0) : consoleMsg.add_data(0.0);
 
     // Battery state
-    // consoleMsg.add_data(this->dataPtr->batteryCharge);
+    consoleMsg.add_data(this->dataPtr->batteryCharge);
 
     this->dataPtr->consolePub.Publish(consoleMsg);
 
