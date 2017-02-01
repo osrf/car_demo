@@ -193,8 +193,17 @@ namespace gazebo
     /// \brief Gas energy density (J/gallon)
     public: const double kGasEnergyDensity = 1.29e8;
 
+    /// \brief Battery charge capacity in Watt-hours
+    public: double batteryChargeWattHours = 280;
+
+    /// \brief Battery discharge capacity in Watt-hours
+    public: double batteryDischargeWattHours = 260;
+
     /// \brief Gas engine efficiency
-    public: const double kGasEfficiency = 0.4;
+    public: double gasEfficiency = 0.37;
+
+    /// \brief Minimum gas flow rate (gallons / sec)
+    public: double minGasFlow = 1e-4;
 
     /// \brief Gas consumption (gallon)
     public: double gasConsumption = 0;
@@ -203,7 +212,7 @@ namespace gazebo
     public: double batteryCharge = 0.75;
 
     /// \brief Battery charge threshold when it has to be recharged.
-    public: const double batteryLowThreshold = 0.1;
+    public: const double batteryLowThreshold = 0.38;
 
     /// \brief Whether EV mode is on or off.
     public: bool evMode = false;
@@ -211,21 +220,24 @@ namespace gazebo
     /// \brief Gas pedal position in percentage. 1.0 = Fully accelerated.
     public: double gasPedalPercent = 0;
 
+    /// \brief Power for charging a low battery (Watts).
+    public: const double kLowBatteryChargePower = 2000;
+
     /// \brief Threshold delimiting the gas pedal (throttle) low and medium
     /// ranges.
-    public: const double gasPedalLowMedium = 0.2;
+    public: const double kGasPedalLowMedium = 0.25;
 
     /// \brief Threshold delimiting the gas pedal (throttle) medium and high
     /// ranges.
-    public: const double gasPedalMediumHigh = 0.5;
+    public: const double kGasPedalMediumHigh = 0.5;
 
     /// \brief Threshold delimiting the speed (throttle) low and medium
     /// ranges in miles/h.
-    public: const double speedLowMedium = 25.0;
+    public: const double speedLowMedium = 26.0;
 
     /// \brief Threshold delimiting the speed (throttle) medium and high
     /// ranges in miles/h.
-    public: const double speedMediumHigh = 45.0;
+    public: const double speedMediumHigh = 46.0;
 
     /// \brief Brake pedal position in percentage. 1.0 =
     public: double brakePedalPercent = 0;
@@ -442,6 +454,34 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->dataPtr->backBrakeTorque = _sdf->Get<double>(paramName);
   else
     this->dataPtr->backBrakeTorque = paramDefault;
+
+  paramName = "battery_charge_watt_hours";
+  paramDefault = 280;
+  if (_sdf->HasElement(paramName))
+    this->dataPtr->batteryChargeWattHours = _sdf->Get<double>(paramName);
+  else
+    this->dataPtr->batteryChargeWattHours = paramDefault;
+
+  paramName = "battery_discharge_watt_hours";
+  paramDefault = 260;
+  if (_sdf->HasElement(paramName))
+    this->dataPtr->batteryDischargeWattHours = _sdf->Get<double>(paramName);
+  else
+    this->dataPtr->batteryDischargeWattHours = paramDefault;
+
+  paramName = "gas_efficiency";
+  paramDefault = 0.37;
+  if (_sdf->HasElement(paramName))
+    this->dataPtr->gasEfficiency = _sdf->Get<double>(paramName);
+  else
+    this->dataPtr->gasEfficiency = paramDefault;
+
+  paramName = "min_gas_flow";
+  paramDefault = 1e-4;
+  if (_sdf->HasElement(paramName))
+    this->dataPtr->minGasFlow = _sdf->Get<double>(paramName);
+  else
+    this->dataPtr->minGasFlow = paramDefault;
 
   paramName = "max_speed";
   paramDefault = 10;
@@ -1015,7 +1055,6 @@ void PriusHybridPlugin::Update()
   // Use directionState to determine direction of that can be applied torque.
   // Note that definition of DirectionType allows multiplication to determine
   // torque direction.
-  // double gasPercent = this->GasPedalPercent();
   double gasPercent = this->dataPtr->gasPedalPercent;
   double gasMultiplier = this->GasTorqueMultiplier();
   double flGasTorque = 0, frGasTorque = 0, blGasTorque = 0, brGasTorque = 0;
@@ -1027,23 +1066,17 @@ void PriusHybridPlugin::Update()
     flGasTorque = gasPercent*dPtr->frontTorque * gasMultiplier;
     frGasTorque = gasPercent*dPtr->frontTorque * gasMultiplier;
   }
-  double frontGasMechanicalPower =
-      std::abs(flGasTorque * dPtr->flWheelAngularVelocity) +
-      std::abs(frGasTorque * dPtr->frWheelAngularVelocity);
-
   if (fabs(dPtr->blWheelAngularVelocity * dPtr->blWheelRadius) < dPtr->maxSpeed &&
       fabs(dPtr->brWheelAngularVelocity * dPtr->brWheelRadius) < dPtr->maxSpeed)
   {
     blGasTorque = gasPercent * dPtr->backTorque * gasMultiplier;
     brGasTorque = gasPercent * dPtr->backTorque * gasMultiplier;
   }
-  double backGasMechanicalPower =
+  double throttlePower =
+      std::abs(flGasTorque * dPtr->flWheelAngularVelocity) +
+      std::abs(frGasTorque * dPtr->frWheelAngularVelocity) +
       std::abs(blGasTorque * dPtr->blWheelAngularVelocity) +
       std::abs(brGasTorque * dPtr->brWheelAngularVelocity);
-
-  // TODO: Move this logic below
-  dPtr->gasConsumption += dt / dPtr->kGasEfficiency / dPtr->kGasEnergyDensity
-      * (frontGasMechanicalPower + backGasMechanicalPower);
 
   // auto release handbrake as soon as the gas pedal is depressed
   if (this->dataPtr->gasPedalPercent > 0)
@@ -1101,10 +1134,20 @@ void PriusHybridPlugin::Update()
   //         low |____|_____|_________
   //              low  med   high    speed
 
+  bool engineOn;
+  bool regen = true;
+  double batteryChargePower = 0;
+  double batteryDischargePower = 0;
+  double gasPower = 0;
+
   // Battery is below threshold
   if (this->dataPtr->batteryCharge < this->dataPtr->batteryLowThreshold)
   {
     // Gas engine is on and recharing battery
+    engineOn = true;
+    this->dataPtr->evMode = false;
+    batteryChargePower = dPtr->kLowBatteryChargePower;
+    throttlePower += dPtr->kLowBatteryChargePower;
 
     // this->dataPtr->gasConsumption += ...
     // this->dataPtr->batteryCharge += ...
@@ -1113,38 +1156,54 @@ void PriusHybridPlugin::Update()
   else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
   {
     // Gas engine is off, battery not recharged
+    engineOn = false;
+    regen = false;
   }
   // Speed below medium-high threshold, throttle below low-medium threshold
   else if (linearVel < this->dataPtr->speedMediumHigh &&
-      this->dataPtr->gasPedalPercent < this->dataPtr->gasPedalLowMedium)
+      this->dataPtr->gasPedalPercent < this->dataPtr->kGasPedalLowMedium)
   {
     // Gas engine is off, running on battery
-
-    // this->dataPtr->batteryCharge -= ...
+    engineOn = false;
+    batteryDischargePower = throttlePower;
   }
   // EV mode, speed below low-medium threshold, throttle below medium-high
   // threshold
   else if (this->dataPtr->evMode && linearVel < this->dataPtr->speedLowMedium
-      && this->dataPtr->gasPedalPercent < this->dataPtr->gasPedalMediumHigh)
+      && this->dataPtr->evMode
+      && this->dataPtr->gasPedalPercent < this->dataPtr->kGasPedalMediumHigh)
   {
     // Gas engine is off, running on battery
-
-    // this->dataPtr->batteryCharge -= ...
-  }
-  // Regenerative breaking, unless on neutral
-  else if (this->dataPtr->directionState != PriusHybridPluginPrivate::NEUTRAL &&
-      this->dataPtr->brakePedalPercent > 0)
-  {
-    // Gas engine is on, battery is being recharged
-
-    // this->dataPtr->gasConsumption += ...
-    // this->dataPtr->batteryCharge += ...
+    engineOn = false;
+    batteryDischargePower = throttlePower;
   }
   else
   {
     // Gas engine is on
+    engineOn = true;
+    this->dataPtr->evMode = false;
+  }
 
-    // this->dataPtr->gasConsumption += ...
+  if (regen)
+  {
+    // regen max torque at same level as throttle limit in EV mode
+    // but only at the front wheels
+    batteryChargePower +=
+      std::min(this->dataPtr->kGasPedalMediumHigh, brakePercent)*(
+        dPtr->frontBrakeTorque * std::abs(dPtr->flWheelAngularVelocity) +
+        dPtr->frontBrakeTorque * std::abs(dPtr->frWheelAngularVelocity) +
+        dPtr->backBrakeTorque * std::abs(dPtr->blWheelAngularVelocity) +
+        dPtr->backBrakeTorque * std::abs(dPtr->brWheelAngularVelocity));
+  }
+  dPtr->batteryCharge += dt / 3600 * (
+      batteryChargePower / dPtr->batteryChargeWattHours
+    - batteryDischargePower / dPtr->batteryDischargeWattHours);
+
+  // engine has minimum gas flow if the throttle is pressed at all
+  if (engineOn && throttlePower > 0)
+  {
+    dPtr->gasConsumption += dt*(dPtr->minGasFlow
+        + throttlePower / dPtr->gasEfficiency / dPtr->kGasEnergyDensity);
   }
 
   // Accumulated mpg since last reset
@@ -1224,10 +1283,10 @@ void PriusHybridPlugin::Update()
     // true if the brake is applied
     data.brake = this->dataPtr->brakePedalPercent > 0.01;
     // true if in ev mode
-    data.evMode = false;  // TODO
-    bool engineIsOn = true;  // TODO engine RPM only if engine is on
+    data.evMode = this->dataPtr->evMode;
+    // engine RPM only if engine is on
     // engine rpm rough fit of rpm vs throttle
-    data.rpm = (!engineIsOn) ? 0.0 : (1000.0 + 31.854 * 100.0 * data.accelPedal);
+    data.rpm = (!engineOn) ? 0.0 : (1000.0 + 31.854 * 100.0 * data.accelPedal);
     // angular z velocity
     data.yawRate = this->dataPtr->chassisLink->RelativeAngularVel().Z();
     // Battery SoC
