@@ -1174,7 +1174,7 @@ void PriusHybridPlugin::Update()
     consoleMsg.add_data(this->dataPtr->odom);
 
     // EV mode
-    // this->dataPtr->evMode ? consoleMsg.add_data(1.0) : consoleMsg.add_data(0.0);
+    this->dataPtr->evMode ? consoleMsg.add_data(1.0) : consoleMsg.add_data(0.0);
 
     // Battery state
     // consoleMsg.add_data(this->dataPtr->batteryCharge);
