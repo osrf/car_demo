@@ -212,7 +212,7 @@ namespace gazebo
     public: double batteryCharge = 0.75;
 
     /// \brief Battery charge threshold when it has to be recharged.
-    public: const double batteryLowThreshold = 0.38;
+    public: const double batteryLowThreshold = 0.125;
 
     /// \brief Whether EV mode is on or off.
     public: bool evMode = false;
@@ -1135,7 +1135,7 @@ void PriusHybridPlugin::Update()
   //              low  med   high    speed
 
   bool engineOn;
-  bool regen = true;
+  bool regen = dPtr->directionState != PriusHybridPluginPrivate::NEUTRAL;
   double batteryChargePower = 0;
   double batteryDischargePower = 0;
 
@@ -1153,7 +1153,6 @@ void PriusHybridPlugin::Update()
   {
     // Gas engine is off, battery not recharged
     engineOn = false;
-    regen = false;
   }
   // Speed below medium-high threshold, throttle below low-medium threshold
   else if (linearVel < this->dataPtr->speedMediumHigh &&
