@@ -88,8 +88,15 @@
   max_throttle_accel_g = 0.4
   max_throttle_force = mg * max_throttle_accel_g
   max_throttle_torque = max_throttle_force * wheel_radius
-  max_throttle_torque_front = max_throttle_torque
+  max_throttle_torque_front = 0.5*max_throttle_torque
   max_throttle_torque_rear  = 0
+
+  # powertrain efficiency numbers
+  min_gas_flow_mL_per_s = 0.4
+  min_gas_flow_gal_per_s = min_gas_flow_mL_per_s / 3785.41
+  gas_efficiency = 0.37
+  battery_charge_watt_hours = 263
+  battery_discharge_watt_hours = 228
 %>
 <sdf version="1.6">
   <model name="prius_hybrid">
@@ -108,6 +115,10 @@
       <front_brake_torque><%= max_braking_torque_front %></front_brake_torque>
       <back_brake_torque><%= max_braking_torque_rear %></back_brake_torque>
       <max_speed><%= max_speed %></max_speed>
+      <min_gas_flow><%= min_gas_flow_gal_per_s %></min_gas_flow>
+      <gas_efficiency><%= gas_efficiency %></gas_efficiency>
+      <battery_charge_watt_hours><%= battery_charge_watt_hours %></battery_charge_watt_hours>
+      <battery_discharge_watt_hours><%= battery_discharge_watt_hours %></battery_discharge_watt_hours>
       <!-- 37 deg ~= 0.6458 rad -->
       <max_steer>0.6458</max_steer>
       <flwheel_steering_p_gain>1e4</flwheel_steering_p_gain>
