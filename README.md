@@ -63,7 +63,13 @@ After a few seconds a firefox window will open to `127.0.0.1`
 cd priuscup/aws
 ./deploy-ec2.bash
 ```
-3. Save the AMI
+3. SSH into the instance and create the file `/home/ubuntu/code/aws_s3_keys.bash`
+modifying the contents below appropriately
+```
+export AWS_ACCESS_KEY_ID=idOfBucketWriterUser
+export AWS_SECRET_ACCESS_KEY=secretKeyOfBucketWriterUser
+```
+4. Save the AMI
 
 ## Setting up a local demo
 1. Build a docker image (see instructions above)
