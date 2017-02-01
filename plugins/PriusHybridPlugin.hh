@@ -81,6 +81,10 @@ namespace gazebo
     /// \param[in] _msg Int32 message data. Not used
     private: void OnReset(const ignition::msgs::Any &_msg);
 
+    /// \brief Command to stop the simulation
+    /// \param[in] _msg Int32 message data. Not used
+    private: void OnStop(const ignition::msgs::Any &_msg);
+
     /// \brief Update on every time step
     private: void Update();
 

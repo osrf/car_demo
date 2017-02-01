@@ -19,3 +19,8 @@ link_directories(${IGNITION-COMMON_LIBRARY_DIRS})
 add_library(MaxTimeToLivePlugin SHARED MaxTimeToLive.cc)
 target_link_libraries(MaxTimeToLivePlugin gazebo ignition-common0)
 install(TARGETS MaxTimeToLivePlugin DESTINATION ${PRIUSCUP_PLUGIN_INSTALL_DIR})
+
+add_library(UploadDataPlugin SHARED UploadDataPlugin.cc)
+target_link_libraries(UploadDataPlugin gazebo ignition-common0)
+install(TARGETS UploadDataPlugin DESTINATION ${PRIUSCUP_PLUGIN_INSTALL_DIR})
+install(FILES upload.py DESTINATION ${CMAKE_INSTALL_PREFIX}/share/priuscup-${PRIUSCUP_MAJOR_VERSION}/)

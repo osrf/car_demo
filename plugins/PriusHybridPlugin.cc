@@ -28,6 +28,7 @@
 #include <gazebo/common/Time.hh>
 #include "PriusHybridPlugin.hh"
 #include "PriusLogger.hh"
+#include "PriusData.hh"
 
 namespace gazebo
 {
@@ -311,6 +312,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->dataPtr->node.Subscribe("/prius/reset",
       &PriusHybridPlugin::OnReset, this);
+  this->dataPtr->node.Subscribe("/prius/stop",
+      &PriusHybridPlugin::OnStop, this);
 
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
   this->dataPtr->node.Subscribe("/cmd_gear",
@@ -584,7 +587,7 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       this);
 
   this->dataPtr->logger.reset(new priuscup::PriusLogger(
-        "/tmp/prius_data.txt", 20));
+        PRIUS_DATA_PATH, 20));
   this->dataPtr->logger->Start();
 }
 
@@ -842,6 +845,29 @@ void PriusHybridPlugin::OnReset(const ignition::msgs::Any & /*_msg*/)
   msg.mutable_reset()->set_all(true);
 
   this->dataPtr->worldControlPub->Publish(msg);
+}
+
+/////////////////////////////////////////////////
+void PriusHybridPlugin::OnStop(const ignition::msgs::Any & /*_msg*/)
+{
+  // stop the logger
+  this->dataPtr->logger->Stop();
+
+  ignition::msgs::StringMsg req;
+  ignition::msgs::StringMsg rep;
+  bool result = false;
+  unsigned int timeout = 5000;
+  bool executed = this->dataPtr->node.Request("/priuscup/upload",
+      req, timeout, rep, result);
+  if (executed)
+  {
+    std::cerr << "Result: " << result << std::endl;
+    std::cerr << rep.data() << std::endl;
+  }
+  else
+  {
+    std::cerr << "Service call timed out" << std::endl;
+  }
 }
 
 /////////////////////////////////////////////////

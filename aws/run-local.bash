@@ -12,7 +12,7 @@ trap cleanup EXIT
 
 # start precious software in the background
 echo "{}" > $dir/cloudsim-options.json
-touch $dir/cloudsim-env.bash
+echo "CLOUDSIM_ADMIN=\"abc\"" > $dir/cloudsim-env.bash
 $dir/cloudsim_deploy.bash --no-shutdown &
 echo "Waiting for precious to start"
 sleep 10

@@ -31,12 +31,19 @@ cd priuscup/docker/precious
 sudo docker tag precious:2017_Jan_12_1914 precious:latest
 ```
 
+## S3 bucket file upload
+
+1. To enable uploading prius data to s3 bucket, create an `aws_s3_keys.bash`
+file in `priuscup/aws` and export `AWS_ACCESS_KEY_ID` and
+`AWS_SECRET_ACCESS_KEY` variables.
+
+
 ## Testing Locally
 ### option 1: cloudsim_deploy.bash
 1. Start the docker image
 ```
 cd priuscup/aws
-touch cloudsim-env.bash
+echo "CLOUDSIM_ADMIN=\"abc\"" > $dir/cloudsim-env.bash
 echo "{}" > cloudsim-options.bash
 ./cloudsim_deploy.bash --no-shutdown
 ```
