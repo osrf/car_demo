@@ -1205,8 +1205,8 @@ void PriusHybridPlugin::Update()
   }
 
   // Accumulated mpg since last reset
-  // max value: 99.9
-  double mpg = std::min(99.9,
+  // max value: 999.9
+  double mpg = std::min(999.9,
       dPtr->odom / std::max(dPtr->gasConsumption, 1e-6));
 
   if ((curTime - this->dataPtr->lastMsgTime) > .5)
