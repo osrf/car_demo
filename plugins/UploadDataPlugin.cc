@@ -127,23 +127,8 @@ void UploadDataPluginPrivate::Upload(const ignition::msgs::StringMsg &_req,
     _result = false;
     return;
   }
-  const char *id = common::getEnv("AWS_ACCESS_KEY_ID");
-  const char *secret = common::getEnv("AWS_SECRET_ACCESS_KEY");
-  if (!id || !secret)
-  {
-    std::string errorMsg = "Missing AWS credentials";
-    _rep.set_data(errorMsg);
-    _result = false;
-    return;
-  }
 
-  std::string prefix = common::Time::GetWallTimeAsISOString();
-  std::string targetname = "prius_data.txt";
-  const char *user = common::getEnv("PRIUS_USER_ID");
-  if (user)
-    prefix = std::string(user);
-  targetname = prefix + "_" + targetname;
-  std::string scriptPath = common::find_file("upload.py");
+  std::string scriptPath = common::find_file("upload.bash");
   if (scriptPath.empty())
   {
      std::string errorMsg = "Unable to find upload script";
@@ -151,8 +136,9 @@ void UploadDataPluginPrivate::Upload(const ignition::msgs::StringMsg &_req,
     _result = false;
     return;
   }
-  std::string uploadCmdStr = "python " + scriptPath + " "
-      + filename + " " + targetname + " " +  id + " " + secret;
+
+  std::string uploadCmdStr = "bash " + scriptPath + " "
+      + filename;
   std::string out = custom_exec(uploadCmdStr);
   _rep.set_data(out);
   _result = true;

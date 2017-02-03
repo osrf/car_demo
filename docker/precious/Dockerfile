@@ -9,6 +9,7 @@ RUN apt-get update \
  && apt-get install -y \
     gdb \
     python-pip \
+    curl \
  && apt-get clean
 
 RUN pip install boto
