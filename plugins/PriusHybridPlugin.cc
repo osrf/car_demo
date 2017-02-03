@@ -919,6 +919,7 @@ void PriusHybridPlugin::Reset()
   this->dataPtr->handWheelPID.Reset();
   this->dataPtr->lastMsgTime = 0;
   this->dataPtr->lastSimTime = 0;
+  this->dataPtr->lastModeCmdTime = 0;
   this->dataPtr->lastPedalCmdTime = 0;
   this->dataPtr->lastSteeringCmdTime = 0;
   this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
