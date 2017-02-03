@@ -919,6 +919,7 @@ void PriusHybridPlugin::Reset()
   this->dataPtr->handWheelPID.Reset();
   this->dataPtr->lastMsgTime = 0;
   this->dataPtr->lastSimTime = 0;
+  this->dataPtr->lastModeCmdTime = 0;
   this->dataPtr->lastPedalCmdTime = 0;
   this->dataPtr->lastSteeringCmdTime = 0;
   this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
@@ -973,6 +974,13 @@ void PriusHybridPlugin::Update()
   dPtr->brWheelAngularVelocity = dPtr->brWheelJoint->GetVelocity(0);
 
   dPtr->chassisLinearVelocity = dPtr->chassisLink->WorldCoGLinearVel();
+  // Convert meter/sec to miles/hour
+  double linearVel = dPtr->chassisLinearVelocity.Length() * 2.23694;
+
+  // Distance traveled in miles.
+  this->dataPtr->odom += (fabs(linearVel) * dt/3600.0);
+
+  bool neutral = dPtr->directionState == PriusHybridPluginPrivate::NEUTRAL;
 
   this->dataPtr->lastSimTime = curTime;
 
@@ -1049,13 +1057,30 @@ void PriusHybridPlugin::Update()
   //    << std::endl;
   //}
 
+  // Model low-speed caaaareep and high-speed regen braking
+  // with term added to gas/brake
+  // Cross-over speed is 7 miles/hour
+  // 10% throttle at 0 speed
+  // max 2.5% braking at higher speeds
+  double creepPercent;
+  if (std::abs(linearVel) <= 7)
+  {
+    creepPercent = 0.1 * (1 - std::abs(linearVel) / 7);
+  }
+  else
+  {
+    creepPercent = 0.025 * (7 - std::abs(linearVel));
+  }
+  creepPercent = ignition::math::clamp(creepPercent, -0.025, 0.1);
+
   // Gas pedal torque.
   // Map gas torques to individual wheels.
   // Cut off gas torque at a given wheel if max speed is exceeded.
   // Use directionState to determine direction of that can be applied torque.
   // Note that definition of DirectionType allows multiplication to determine
   // torque direction.
-  double gasPercent = this->dataPtr->gasPedalPercent;
+  // also, make sure gas pedal is at least as large as the creepPercent.
+  double gasPercent = std::max(this->dataPtr->gasPedalPercent, creepPercent);
   double gasMultiplier = this->GasTorqueMultiplier();
   double flGasTorque = 0, frGasTorque = 0, blGasTorque = 0, brGasTorque = 0;
   // Apply equal torque at left and right wheels, which is an implicit model
@@ -1084,6 +1109,12 @@ void PriusHybridPlugin::Update()
 
   double brakePercent = this->dataPtr->brakePedalPercent
       + this->dataPtr->handbrakePercent;
+  // use creep braking if not in Neutral
+  if (!neutral)
+  {
+    brakePercent = std::max(brakePercent,
+        -creepPercent - this->dataPtr->gasPedalPercent);
+  }
 
   brakePercent = ignition::math::clamp(brakePercent, 0.0, 1.0);
   dPtr->flWheelJoint->SetParam("friction", 1,
@@ -1103,24 +1134,6 @@ void PriusHybridPlugin::Update()
   // gzerr << "gas and brake torque " << flGasTorque << " "
   //       << flBrakeTorque << std::endl;
 
-  // reset if last command is more than x sec ago
-  if ((curTime - this->dataPtr->lastPedalCmdTime).Double() > 0.3)
-  {
-    this->dataPtr->gasPedalPercent = 0.0;
-    this->dataPtr->brakePedalPercent = 0.0;
-  }
-
-  if ((curTime - this->dataPtr->lastSteeringCmdTime).Double() > 0.3)
-  {
-    this->dataPtr->handWheelCmd = 0;
-  }
-
-  // Convert meter/sec to miles/hour
-  double linearVel = this->dataPtr->model->WorldLinearVel().Length() * 2.23694;
-
-  // Distance traveled in miles.
-  this->dataPtr->odom += (fabs(linearVel) * dt/3600.0);
-
   // Battery
 
   // Speed x throttle regions
@@ -1135,7 +1148,7 @@ void PriusHybridPlugin::Update()
   //              low  med   high    speed
 
   bool engineOn;
-  bool regen = dPtr->directionState != PriusHybridPluginPrivate::NEUTRAL;
+  bool regen = !neutral;
   double batteryChargePower = 0;
   double batteryDischargePower = 0;
 
@@ -1149,7 +1162,7 @@ void PriusHybridPlugin::Update()
     throttlePower += dPtr->kLowBatteryChargePower;
   }
   // Neutral and battery not low
-  else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
+  else if (neutral)
   {
     // Gas engine is off, battery not recharged
     engineOn = false;
@@ -1291,6 +1304,18 @@ void PriusHybridPlugin::Update()
     data.soc = this->dataPtr->batteryCharge;
 
     this->dataPtr->logger->Feed(curTime, data);
+  }
+
+  // reset if last command is more than x sec ago
+  if ((curTime - this->dataPtr->lastPedalCmdTime).Double() > 0.3)
+  {
+    this->dataPtr->gasPedalPercent = 0.0;
+    this->dataPtr->brakePedalPercent = 0.0;
+  }
+
+  if ((curTime - this->dataPtr->lastSteeringCmdTime).Double() > 0.3)
+  {
+    this->dataPtr->handWheelCmd = 0;
   }
 }
 
