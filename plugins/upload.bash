@@ -29,5 +29,5 @@ python  ${DIR}/upload.py $1 ${TARGET_FILENAME} ${AWS_ACCESS_KEY_ID} ${AWS_SECRET
 # hyperdrive webhook
 LOG_PATH="http://priusdata.s3-website-us-west-1.amazonaws.com/${TARGET_FILENAME}"
 URL=http://onramp.hyperdrive.me/osrf
-curl -X POST $URL"?token=${PRIUS_USER_ID}&path=${LOG_PATH}"
+curl -G -X POST $URL --data-urlencode "token=${PRIUS_USER_ID}" --data-urlencode "path=${LOG_PATH}"
 
