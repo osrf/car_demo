@@ -28,7 +28,7 @@
     </include>
 
     <model name="prius_hybrid">
-      <pose>95.619855 -308.245 7.532 0 0 3.081629</pose>
+      <pose>94.43 -309.53 7.53 0 0 -3.11</pose>
       <include>
         <uri>model://prius_hybrid</uri>
       </include>
