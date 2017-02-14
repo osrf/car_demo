@@ -853,13 +853,6 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
 /////////////////////////////////////////////////
 void PriusHybridPlugin::KeyControl(const int _key)
 {
-  // k
-  if (_key == 75 || _key == 107)
-  {
-    this->dataPtr->keyControl = !this->dataPtr->keyControl;
-    return;
-  }
-
   if (this->dataPtr->keyControl == 0)
     this->KeyControlTypeA(_key);
   else if (this->dataPtr->keyControl == 1)
