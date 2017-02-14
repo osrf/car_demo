@@ -24,7 +24,7 @@ if (NOT CMAKE_BUILD_TYPE)
   message(STATUS "Build type not selected: Release selected by default")
 endif (NOT CMAKE_BUILD_TYPE)
 
-find_package(gazebo 8 REQUIRED)
+find_package(gazebo REQUIRED)
 
 include(GNUInstallDirs)
 
