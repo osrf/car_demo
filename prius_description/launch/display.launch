@@ -1,0 +1,14 @@
+<launch>
+  <arg name="model" default="$(find prius_description)/urdf/prius.urdf"/>
+  <arg name="gui" default="true" />
+  <arg name="rvizconfig" default="$(find prius_description)/rviz/urdf.rviz" />
+
+  <rosparam param="robot_description" file="$(arg model)"/>
+
+  <param name="use_gui" value="$(arg gui)"/>
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+</launch>
