@@ -28,48 +28,52 @@
   <link name="br_wheel">
   </link>
 
-  <joint name="fl_steer_joint" type="revolute">
+  <joint name="fl_steer_joint" type="continuous">
     <parent link="chassis"/>
     <child link="fl_axle"/>
     <origin xyz="0.767 -1.41 0.3" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
+    <!--
     <limit upper="3.14" lower="3.14" effort="100000000" velocity="1000000"/>
+    -->
   </joint>
 
-  <joint name="fr_steer_joint" type="revolute">
+  <joint name="fr_steer_joint" type="continuous">
     <parent link="chassis"/>
     <child link="fr_axle"/>
     <origin xyz="-0.767 -1.41 0.3" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
+    <!--
     <limit upper="3.14" lower="3.14" effort="100000000" velocity="1000000"/>
+    -->
   </joint>
 
   <joint name="fl_wheel_joint" type="continuous">
     <parent link="fl_axle"/>
     <child link="fl_wheel"/>
       <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
+    <axis xyz="1 0 0"/>
   </joint>
 
   <joint name="fr_wheel_joint" type="continuous">
     <parent link="fr_axle"/>
     <child link="fr_wheel"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
+    <axis xyz="1 0 0"/>
   </joint>
 
   <joint name="bl_wheel_joint" type="continuous">
     <parent link="chassis"/>
     <child link="bl_wheel"/>
     <origin xyz="0.793 1.45 0.3" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
+    <axis xyz="1 0 0"/>
   </joint>
 
   <joint name="br_wheel_joint" type="continuous">
     <parent link="chassis"/>
     <child link="br_wheel"/>
     <origin xyz="-0.793 1.45 0.3" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
+    <axis xyz="1 0 0"/>
   </joint>
 
 </robot>
