@@ -6,6 +6,7 @@
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="verbose" value="true"/>
+    <arg name="world_name" value="$(find car_demo)/worlds/mcity.world"/>
   </include>
 
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model prius"/>

@@ -31,6 +31,9 @@ install(TARGETS PriusHybridPlugin
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+install(DIRECTORY models DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+
 
 # TODO(tfoote) replace installers add_subdirectory(models)
 # TODO(tfoote) replace installers add_subdirectory(worlds)

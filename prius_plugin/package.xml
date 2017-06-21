@@ -10,6 +10,6 @@
   <depend>gazebo_ros</depend>
   <export>
     <!-- Other tools can request additional information be placed here -->
-    <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}" />
+    <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}" gazebo_model_path="${prefix}/models"/>
   </export>
 </package>
