@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="model" default="$(find prius_description)/urdf/prius.urdf"/>
+
+  <param name="robot_description" textfile="$(arg model)"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="verbose" value="true"/>
+  </include>
+
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model prius"/>
+</launch>

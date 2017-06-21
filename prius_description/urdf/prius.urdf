@@ -1,74 +1,174 @@
 <?xml version="1.0"?>
-<robot name="prius">
-
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="prius">
   <link name="chassis">
     <visual>
-      <origin xyz="0 0 0" rpy="-1.570796 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://prius_description/meshes/prius_all.dae" scale="0.01 0.01 0.01"/>
+        <mesh filename="package://prius_description/meshes/Hybrid.obj" scale="0.01 0.01 0.01"/>
       </geometry>
     </visual>
-  </link>
 
+    <collision name="chassis">
+      <origin xyz="0.0 0.05 0.625" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.7526 2.1 0.95"/>
+      </geometry>
+    </collision>
+
+    <collision name="front_bumper">
+      <origin xyz="0.0 -2.0 0.458488" rpy="0.0 0 0"/>
+      <geometry>
+        <box size="1.337282 0.48 0.566691"/>
+      </geometry>
+    </collision>
+
+    <collision name="hood">
+      <origin xyz="0.0 -1.900842 0.676305" rpy="0.341247 0 0"/>
+      <geometry>
+        <box size="1.597968 0.493107 0.265468"/>
+      </geometry>
+    </collision>
+
+    <collision name="windshield">
+      <origin xyz="0.0 -0.875105 1.032268" rpy="0.335476 0 0"/>
+      <geometry>
+        <box size="1.168381 1.654253 0.272347"/>
+      </geometry>
+    </collision>
+
+    <collision name="top_front">
+      <origin xyz="0.0 0.161236 1.386042" rpy="0.135030 0 0"/>
+      <geometry>
+        <box size="1.279154 0.625988 0.171868"/>
+      </geometry>
+    </collision>
+
+    <collision name="top_rear">
+      <origin xyz="0.0 0.817696 1.360069" rpy="-0.068997 0 0"/>
+      <geometry>
+        <box size="1.285130 0.771189 0.226557"/>
+      </geometry>
+    </collision>
+
+    <collision name="rear_window">
+      <origin xyz="0.0 1.640531 1.175126" rpy="-0.262017 0 0"/>
+      <geometry>
+        <box size="1.267845 1.116344 0.244286"/>
+      </geometry>
+    </collision>
+
+    <collision name="trunk">
+      <origin xyz="0.0 1.637059 0.888180" rpy="0.0 0 0"/>
+      <geometry>
+        <box size="1.788064 1.138988 0.482746"/>
+      </geometry>
+    </collision>
+
+    <collision name="back_bumper">
+      <origin xyz="0.0 2.054454 0.577870" rpy="0.0 0 0"/>
+      <geometry>
+        <box size="1.781650 0.512093 0.581427"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
   <link name="fl_axle">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
   </link>
-
   <link name="fr_axle">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
   </link>
-
   <link name="fl_wheel">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+    <collision name="collision">
+      <geometry>
+        <sphere radius="0.31265"/>
+      </geometry>
+    </collision>
   </link>
-
   <link name="fr_wheel">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+    <collision name="collision">
+      <geometry>
+        <sphere radius="0.31265"/>
+      </geometry>
+    </collision>
   </link>
-
   <link name="bl_wheel">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+    <collision name="collision">
+      <geometry>
+        <sphere radius="0.31265"/>
+      </geometry>
+    </collision>
   </link>
-
   <link name="br_wheel">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+    <collision name="collision">
+      <geometry>
+        <sphere radius="0.31265"/>
+      </geometry>
+    </collision>
   </link>
-
   <joint name="fl_steer_joint" type="continuous">
     <parent link="chassis"/>
     <child link="fl_axle"/>
     <origin xyz="0.767 -1.41 0.3" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <!--
-    <limit upper="3.14" lower="3.14" effort="100000000" velocity="1000000"/>
-    -->
   </joint>
-
   <joint name="fr_steer_joint" type="continuous">
     <parent link="chassis"/>
     <child link="fr_axle"/>
     <origin xyz="-0.767 -1.41 0.3" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <!--
-    <limit upper="3.14" lower="3.14" effort="100000000" velocity="1000000"/>
-    -->
   </joint>
-
   <joint name="fl_wheel_joint" type="continuous">
     <parent link="fl_axle"/>
     <child link="fl_wheel"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>
-
   <joint name="fr_wheel_joint" type="continuous">
     <parent link="fr_axle"/>
     <child link="fr_wheel"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>
-
   <joint name="bl_wheel_joint" type="continuous">
     <parent link="chassis"/>
     <child link="bl_wheel"/>
     <origin xyz="0.793 1.45 0.3" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>
-
   <joint name="br_wheel_joint" type="continuous">
     <parent link="chassis"/>
     <child link="br_wheel"/>
@@ -77,4 +177,3 @@
   </joint>
 
 </robot>
-
