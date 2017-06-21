@@ -26,6 +26,8 @@
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/common/Plugin.hh>
 
+#include <prius_msgs/Control.h>
+
 namespace gazebo
 {
   // Forward declaration
@@ -42,6 +44,9 @@ namespace gazebo
 
     /// \brief Load the controller.
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf);
+
+    /// \brief ROS subscriber callback
+    private: void OnPriusCommand(const prius_msgs::Control::ConstPtr &msg);
 
     /// \brief Callback each time a key message is received.
     /// \param[in] _msg Keypress message.

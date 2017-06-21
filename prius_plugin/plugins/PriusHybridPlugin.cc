@@ -24,6 +24,8 @@
 #include <gazebo/common/PID.hh>
 #include <gazebo/common/Time.hh>
 
+#include <ros/ros.h>
+
 namespace gazebo
 {
   class PriusHybridPluginPrivate
@@ -38,6 +40,10 @@ namespace gazebo
               /// \brief Forward
               FORWARD = 1
             };
+
+    public: ros::NodeHandle nh;
+
+    public: ros::Subscriber controlSub;
 
     /// \brief Pointer to the world
     public: physics::WorldPtr world;
@@ -233,12 +239,42 @@ using namespace gazebo;
 PriusHybridPlugin::PriusHybridPlugin()
     : dataPtr(new PriusHybridPluginPrivate)
 {
+  int argc = 0;
+  char *argv = nullptr;
+  ros::init(argc, &argv, "PriusHybridPlugin");
+  ros::NodeHandle nh;
+  this->dataPtr->controlSub = nh.subscribe("prius", 10, &PriusHybridPlugin::OnPriusCommand, this);
+
   this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
   this->dataPtr->handWheelForce = 1;
   this->dataPtr->flWheelRadius = 0.3;
   this->dataPtr->frWheelRadius = 0.3;
   this->dataPtr->blWheelRadius = 0.3;
   this->dataPtr->brWheelRadius = 0.3;
+}
+
+
+void PriusHybridPlugin::OnPriusCommand(const prius_msgs::Control::ConstPtr &msg)
+{
+  this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
+  this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
+
+  // Steering wheel command
+  double handWheelRange =
+    this->dataPtr->handWheelHigh - this->dataPtr->handWheelLow;
+
+  double handCmd = msg->steer * handWheelRange;
+  handCmd = ignition::math::clamp(handCmd, this->dataPtr->handWheelLow,
+      this->dataPtr->handWheelHigh);
+  this->dataPtr->handWheelCmd = handCmd;
+
+  // Brake command
+  double brake = ignition::math::clamp(msg->brake, 0.0, 1.0);
+  this->dataPtr->brakePedalPercent = brake;
+
+  // Throttle command
+  double throttle = ignition::math::clamp(msg->throttle, 0.0, 1.0);
+  this->dataPtr->gasPedalPercent = throttle;
 }
 
 /////////////////////////////////////////////////

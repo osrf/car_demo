@@ -8,6 +8,7 @@ set (PRIUSCUP_VERSION_FULL ${PRIUSCUP_MAJOR_VERSION}.${PRIUSCUP_MINOR_VERSION}.$
 
 find_package(catkin REQUIRED COMPONENTS
   gazebo_ros
+  prius_msgs
 )
 
 find_package(gazebo 8 REQUIRED)
