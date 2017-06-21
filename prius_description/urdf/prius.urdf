@@ -502,7 +502,7 @@
       </plugin>
       <always_on>1</always_on>
       <update_rate>30</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -534,7 +534,7 @@
       </plugin>
       <always_on>1</always_on>
       <update_rate>30</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -566,7 +566,7 @@
       </plugin>
       <always_on>1</always_on>
       <update_rate>30</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -747,7 +747,7 @@
       </plugin>
       <always_on>false</always_on>
       <update_rate>5</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -779,7 +779,7 @@
       </plugin>
       <always_on>false</always_on>
       <update_rate>5</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -811,7 +811,7 @@
       </plugin>
       <always_on>false</always_on>
       <update_rate>5</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -843,7 +843,7 @@
       </plugin>
       <always_on>false</always_on>
       <update_rate>5</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -875,7 +875,7 @@
       </plugin>
       <always_on>false</always_on>
       <update_rate>5</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -907,7 +907,7 @@
       </plugin>
       <always_on>false</always_on>
       <update_rate>5</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -939,7 +939,7 @@
       </plugin>
       <always_on>false</always_on>
       <update_rate>5</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -971,7 +971,7 @@
       </plugin>
       <always_on>false</always_on>
       <update_rate>5</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 </robot>
