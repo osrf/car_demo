@@ -35,7 +35,7 @@
   <joint name="base_link_connection" type="fixed">
     <parent link="base_link"/>
     <child link="chassis"/>
-    <origin xyz="1.45 0 0" rpy="0 0 1.57"/>
+    <origin xyz="1.45 0 0" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>
 
@@ -275,6 +275,10 @@
     <child link="front_right_laser_link"/>
     <origin xyz="-1 -2.3 0.5" rpy="0 0.05 3.14"/>
   </joint>
+
+  <gazebo reference="base_link_connection">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
 
   <gazebo>
     <plugin name="pruis_hybrid_drive" filename="libPriusHybridPlugin.so">

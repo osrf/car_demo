@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(gazebo 8 REQUIRED)
+find_package(ignition-msgs0 REQUIRED)
 
 catkin_package(
  # INCLUDE_DIRS include
@@ -23,7 +24,7 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS} ${SDFormat_INCLUDE_DIRS})
 
 add_library(PriusHybridPlugin SHARED plugins/PriusHybridPlugin.cc)
-target_link_libraries(PriusHybridPlugin ${GAZEBO_LIBRARIES})
+target_link_libraries(PriusHybridPlugin ${GAZEBO_LIBRARIES} ${IGNITION-MSGS_LIBRARIES})
 
 
 install(TARGETS PriusHybridPlugin
