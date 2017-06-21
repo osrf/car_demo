@@ -9,6 +9,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>gazebo_ros</depend>
   <depend>prius_msgs</depend>
+  <exec_depend>fake_localization</exec_depend>
   <export>
     <!-- Other tools can request additional information be placed here -->
     <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}" gazebo_model_path="${prefix}/models"/>
