@@ -182,7 +182,8 @@
     <origin xyz="0.44 -0.717609 0.938807" rpy="-0.87 0 0"/>
     <parent link="chassis"/>
     <child link="steering_wheel"/>
-    <axis xyz="0 1 0.84365"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-7.85" upper="7.85" effort="10000000" velocity="1000000"/>
   </joint>
 
   <joint name="front_left_steer_joint" type="continuous">
@@ -190,12 +191,14 @@
     <child link="fl_axle"/>
     <origin xyz="0.767 -1.41 0.3" rpy="-0.089 0 0"/>
     <axis xyz="0 0 1"/>
+    <limit lower="-0.8727" upper="0.8727" effort="10000000" velocity="1000000"/>
   </joint>
   <joint name="front_right_steer_joint" type="continuous">
     <parent link="chassis"/>
     <child link="fr_axle"/>
     <origin xyz="-0.767 -1.41 0.3" rpy="-0.089 0 0"/>
     <axis xyz="0 0 1"/>
+    <limit lower="-0.8727" upper="0.8727" effort="10000000" velocity="1000000"/>
   </joint>
   <joint name="front_left_wheel_joint" type="continuous">
     <parent link="fl_axle"/>

@@ -446,12 +446,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->brWheelRadius = this->CollisionRadius(
       this->dataPtr->brWheelJoint->GetChild()->GetCollision(id));
 
-  /* gzerr << "wheel radius: "
-     << this->dataPtr->flWheelRadius << " "
-     << this->dataPtr->frWheelRadius << " "
-     << this->dataPtr->blWheelRadius << " "
-     << this->dataPtr->brWheelRadius << std::endl;*/
-
   // Compute wheelbase, frontTrackWidth, and rearTrackWidth
   //  first compute the positions of the 4 wheel centers
   //  again assumes wheel link is child of joint and has only one collision
@@ -480,12 +474,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   vec3 = frontAxlePos - backAxlePos;
   this->dataPtr->wheelbaseLength = vec3.Length();
 
-  /* gzerr << "wheel base length and track width: "
-     << this->dataPtr->wheelbaseLength << " "
-     << this->dataPtr->frontTrackWidth
-     << " " << this->dataPtr->backTrackWidth << std::endl; */
-
-
 
   this->dataPtr->handWheelPID.Init(100, 0, 0, 0, 0,
       this->dataPtr->handWheelForce, -this->dataPtr->handWheelForce);
@@ -500,7 +488,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       this->dataPtr->fRwheelSteeringDgain,
       0, 0, this->dataPtr->kMaxSteeringForceMagnitude,
       -this->dataPtr->kMaxSteeringForceMagnitude);
-
 
   this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
       std::bind(&PriusHybridPlugin::Update, this));
@@ -531,6 +518,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
     // e - gas pedal
     case 101:
     {
+      gzwarn << "Gas!" << std::endl;
       this->dataPtr->brakePedalPercent = 0.0;
       this->dataPtr->gasPedalPercent += 0.1;
       this->dataPtr->gasPedalPercent =
@@ -541,6 +529,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
     // w - release pedals
     case 119:
     {
+      gzwarn << "Release!" << std::endl;
       this->dataPtr->brakePedalPercent = 0.0;
       this->dataPtr->gasPedalPercent = 0.0;
       this->dataPtr->lastGasCmdTime = this->dataPtr->world->SimTime();
@@ -549,6 +538,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
     // q - brake
     case 113:
     {
+      gzwarn << "Brake!" << std::endl;
       this->dataPtr->gasPedalPercent = 0.0;
       this->dataPtr->brakePedalPercent += 0.1;
       this->dataPtr->brakePedalPercent =
@@ -559,6 +549,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
     // a - steer left
     case 97:
     {
+      gzwarn << "Left!" << std::endl;
       this->dataPtr->handWheelCmd += 0.1;
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
@@ -566,6 +557,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
     // d - steer right
     case 100:
     {
+      gzwarn << "Right!" << std::endl;
       this->dataPtr->handWheelCmd -= 0.1;
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
@@ -573,6 +565,7 @@ void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
     // s - center steering
     case 115:
     {
+      gzwarn << "Center!" << std::endl;
       this->dataPtr->handWheelCmd = 0;
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
@@ -631,9 +624,6 @@ void PriusHybridPlugin::Update()
       this->dataPtr->handWheelAngle - this->dataPtr->handWheelCmd;
   double steerCmd = this->dataPtr->handWheelPID.Update(steerError, dt);
   this->dataPtr->handWheelJoint->SetForce(0, steerCmd);
-  //this->dataPtr->handWheelJoint->SetPosition(0, this->dataPtr->handWheelCmd);
-  //this->dataPtr->handWheelJoint->SetLowStop(0, this->dataPtr->handWheelCmd);
-  //this->dataPtr->handWheelJoint->SetHighStop(0, this->dataPtr->handWheelCmd);
 
   // PID (position) steering joints based on steering position
   // Ackermann steering geometry here
@@ -646,30 +636,17 @@ void PriusHybridPlugin::Update()
   this->dataPtr->frWheelSteeringCmd = atan2(tanSteer,
       1 + this->dataPtr->frontTrackWidth/2/this->dataPtr->wheelbaseLength *
       tanSteer);
-  // this->flWheelSteeringCmd = this->handWheelAngle * this->steeringRatio;
-  // this->frWheelSteeringCmd = this->handWheelAngle * this->steeringRatio;
 
   double flwsError =
       this->dataPtr->flSteeringAngle - this->dataPtr->flWheelSteeringCmd;
   double flwsCmd = this->dataPtr->flWheelSteeringPID.Update(flwsError, dt);
   this->dataPtr->flWheelSteeringJoint->SetForce(0, flwsCmd);
-  // this->dataPtr->flWheelSteeringJoint->SetPosition(0,
-  // this->dataPtr->flWheelSteeringCmd);
-  // this->dataPtr->flWheelSteeringJoint->SetLowStop(0,
-  // this->dataPtr->flWheelSteeringCmd);
-  // this->dataPtr->flWheelSteeringJoint->SetHighStop(0,
-  // this->dataPtr->flWheelSteeringCmd);
 
   double frwsError =
       this->dataPtr->frSteeringAngle - this->dataPtr->frWheelSteeringCmd;
   double frwsCmd = this->dataPtr->frWheelSteeringPID.Update(frwsError, dt);
   this->dataPtr->frWheelSteeringJoint->SetForce(0, frwsCmd);
-  // this->dataPtr->frWheelSteeringJoint->SetPosition(0,
-  // this->dataPtr->frWheelSteeringCmd);
-  // this->dataPtr->frWheelSteeringJoint->SetLowStop(0,
-  // this->dataPtr->frWheelSteeringCmd);
-  // this->dataPtr->frWheelSteeringJoint->SetHighStop(0,
-  // this->dataPtr->frWheelSteeringCmd);
+
 
   // Gas pedal torque.
   // Map gas torques to individual wheels.
@@ -700,6 +677,7 @@ void PriusHybridPlugin::Update()
     brGasTorque = gasPercent * this->dataPtr->backTorque * gasMultiplier;
   }
 
+
   // Brake pedal, hand-brake torque.
   // Compute percents and add together, saturating at 100%
   // double brakePercent = this->BrakePedalPercent()
@@ -721,9 +699,6 @@ void PriusHybridPlugin::Update()
   this->dataPtr->frWheelJoint->SetForce(0, frGasTorque);
   this->dataPtr->blWheelJoint->SetForce(0, blGasTorque);
   this->dataPtr->brWheelJoint->SetForce(0, brGasTorque);
-
-  // gzerr << "gas and brake torque " << flGasTorque << " "
-  //       << flBrakeTorque << std::endl;
 
   // reset last command is more than 1sec ago
   if ((curTime - this->dataPtr->lastGasCmdTime).Double() > 1.0)
@@ -785,17 +760,12 @@ void PriusHybridPlugin::Update()
 void PriusHybridPlugin::UpdateHandWheelRatio()
 {
   // The total range the steering wheel can rotate
-  this->dataPtr->handWheelHigh = this->dataPtr->handWheelJoint->UpperLimit(0);
-  this->dataPtr->handWheelLow = this->dataPtr->handWheelJoint->LowerLimit(0);
+  this->dataPtr->handWheelHigh = 7.85;
+  this->dataPtr->handWheelLow = -7.85;
   double handWheelRange =
       this->dataPtr->handWheelHigh - this->dataPtr->handWheelLow;
-  double high = std::min(
-      this->dataPtr->flWheelSteeringJoint->UpperLimit(0),
-      this->dataPtr->frWheelSteeringJoint->UpperLimit(0));
-  high = std::min(high, this->dataPtr->maxSteer);
-  double low = std::max(
-      this->dataPtr->flWheelSteeringJoint->LowerLimit(0),
-      this->dataPtr->frWheelSteeringJoint->LowerLimit(0));
+  double high = 0.8727;
+  double low = -0.8727;
   low = std::max(low, -this->dataPtr->maxSteer);
   double tireAngleRange = high - low;
 
