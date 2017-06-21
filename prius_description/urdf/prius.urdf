@@ -72,42 +72,30 @@
     </collision>
 
     <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <mass value="1356.0"/>
+      <origin xyz="0 0 0.48"/>
+      <inertia ixx="2581.13354740" ixy="0.0" ixz="0.0" iyy="591.30846112" iyz="0.0" izz="2681.95008628"/>
     </inertial>
   </link>
   <link name="fl_axle">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="1"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
     </inertial>
   </link>
   <link name="fr_axle">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="1"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
     </inertial>
   </link>
-  <link name="fl_wheel">
+  <link name="front_left_wheel">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="11"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
-    </inertial>
-    <collision name="collision">
-      <geometry>
-        <sphere radius="0.31265"/>
-      </geometry>
-    </collision>
-  </link>
-  <link name="fr_wheel">
-    <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
     <collision name="collision">
       <geometry>
@@ -115,11 +103,11 @@
       </geometry>
     </collision>
   </link>
-  <link name="bl_wheel">
+  <link name="front_right_wheel">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="11"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
     <collision name="collision">
       <geometry>
@@ -127,11 +115,23 @@
       </geometry>
     </collision>
   </link>
-  <link name="br_wheel">
+  <link name="rear_left_wheel">
     <inertial>
-      <mass value="0.01"/>
+      <mass value="11"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
+    </inertial>
+    <collision name="collision">
+      <geometry>
+        <sphere radius="0.31265"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="rear_right_wheel">
+    <inertial>
+      <mass value="11"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
     <collision name="collision">
       <geometry>
@@ -142,36 +142,36 @@
   <joint name="fl_steer_joint" type="continuous">
     <parent link="chassis"/>
     <child link="fl_axle"/>
-    <origin xyz="0.767 -1.41 0.3" rpy="0 0 0"/>
+    <origin xyz="0.767 -1.41 0.3" rpy="-0.089 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
   <joint name="fr_steer_joint" type="continuous">
     <parent link="chassis"/>
     <child link="fr_axle"/>
-    <origin xyz="-0.767 -1.41 0.3" rpy="0 0 0"/>
+    <origin xyz="-0.767 -1.41 0.3" rpy="-0.089 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
-  <joint name="fl_wheel_joint" type="continuous">
+  <joint name="front_left_wheel_joint" type="continuous">
     <parent link="fl_axle"/>
-    <child link="fl_wheel"/>
+    <child link="front_left_wheel"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>
-  <joint name="fr_wheel_joint" type="continuous">
+  <joint name="front_right_wheel_joint" type="continuous">
     <parent link="fr_axle"/>
-    <child link="fr_wheel"/>
+    <child link="front_right_wheel"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>
-  <joint name="bl_wheel_joint" type="continuous">
+  <joint name="rear_left_wheel_joint" type="continuous">
     <parent link="chassis"/>
-    <child link="bl_wheel"/>
+    <child link="rear_left_wheel"/>
     <origin xyz="0.793 1.45 0.3" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>
-  <joint name="br_wheel_joint" type="continuous">
+  <joint name="rear_right_wheel_joint" type="continuous">
     <parent link="chassis"/>
-    <child link="br_wheel"/>
+    <child link="rear_right_wheel"/>
     <origin xyz="-0.793 1.45 0.3" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>
