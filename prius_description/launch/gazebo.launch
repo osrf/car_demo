@@ -18,6 +18,8 @@
     <!-- <remap from="base_pose_ground_truth" to="/prius/base_pose_ground_truth"/> -->
   </node>
   <node pkg="tf2_ros" type="static_transform_publisher" name="very_inaccurate_odom" args="0 0 0 0 0 0 odom base_link"/>
+  <node pkg="car_demo" type="joystick_translator" name="joystick_translator"/>
+  <!-- <node pkg="joy" type="joy_node" name="joy_node"/>  Needs to be run outside docker at the moment. -->
 
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 3 -y -12 -z 0.5 -Y 1.5708 -model prius"/>
 

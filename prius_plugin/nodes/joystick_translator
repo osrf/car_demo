@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+
+import rospy
+from prius_msgs.msg import Control
+from sensor_msgs.msg import Joy
+
+
+class Translator:
+    def __init__(self):
+        self.sub = rospy.Subscriber("joy", Joy, self.callback)
+        self.pub = rospy.Publisher('prius', Control, queue_size=1)
+        self.last_published_time = rospy.get_rostime()
+        self.last_published = None
+        self.timer = rospy.Timer(rospy.Duration(1./20.), self.timer_callback)
+        
+    def timer_callback(self, event):
+        if self.last_published and self.last_published_time < rospy.get_rostime() + rospy.Duration(1.0/20.):
+            self.callback(self.last_published)
+
+    def callback(self, message):
+        rospy.logdebug("joy_translater received axes %s",message.axes)
+        command = Control()
+        command.header = message.header
+        if message.axes[3] >= 0:
+            command.throttle = message.axes[3]
+            command.brake = 0.0
+        else:
+            command.brake = message.axes[3] * -1
+            command.throttle = 0.0
+        command.steer = message.axes[0]
+        self.last_published = message
+        self.pub.publish(command)
+
+if __name__ == '__main__':
+    rospy.init_node('joy_translator')
+    t = Translator()
+    rospy.spin()
