@@ -1,0 +1,15 @@
+<?xml version='1.0'?>
+<ignition>
+  <namespace>/default</namespace>
+  <clock>system</clock>
+
+  <plugin name="compress" type="libimagecompress.so">
+    <input_topic>/default/prius_hybrid/camera_link/camera/image</input_topic>
+    <output_topic>/image/jpeg</output_topic>
+  </plugin>
+
+  <plugin name="prius_http_server" type="libpriushttpserver.so">
+    <port>8080</port>
+  </plugin>
+
+</ignition>
