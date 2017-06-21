@@ -1,5 +1,31 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="prius">
+
+    <gazebo reference="front_left_wheel">
+      <mu1>0.9</mu1>
+      <mu2>0.9</mu2>
+      <minDepth>0.005</minDepth>
+      <kp>1e8</kp>
+    </gazebo>
+    <gazebo reference="front_right_wheel">
+      <mu1>0.9</mu1>
+      <mu2>0.9</mu2>
+      <minDepth>0.005</minDepth>
+      <kp>1e8</kp>
+    </gazebo>
+    <gazebo reference="rear_left_wheel">
+      <mu1>0.9</mu1>
+      <mu2>0.9</mu2>
+      <minDepth>0.005</minDepth>
+      <kp>1e8</kp>
+    </gazebo>
+    <gazebo reference="rear_right_wheel">
+      <mu1>0.9</mu1>
+      <mu2>0.9</mu2>
+      <minDepth>0.005</minDepth>
+      <kp>1e8</kp>
+    </gazebo>
+
   <link name="chassis">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -97,7 +123,7 @@
       <origin xyz="0 0 0"/>
       <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
-    <collision name="collision">
+    <collision name="front_left_wheel_collision">
       <geometry>
         <sphere radius="0.31265"/>
       </geometry>
@@ -109,7 +135,7 @@
       <origin xyz="0 0 0"/>
       <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
-    <collision name="collision">
+    <collision name="front_right_wheel_collision">
       <geometry>
         <sphere radius="0.31265"/>
       </geometry>
@@ -121,7 +147,7 @@
       <origin xyz="0 0 0"/>
       <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
-    <collision name="collision">
+    <collision name="rear_left_wheel_collision">
       <geometry>
         <sphere radius="0.31265"/>
       </geometry>
@@ -133,78 +159,99 @@
       <origin xyz="0 0 0"/>
       <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
-    <collision name="collision">
+    <collision name="rear_right_wheel_collision">
       <geometry>
         <sphere radius="0.31265"/>
       </geometry>
     </collision>
   </link>
-  <joint name="fl_steer_joint" type="continuous">
+  <link name="steering_wheel">
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.14583300" ixy="0.0" ixz="0.0" iyy="0.14583300" iyz="0.0" izz="0.125"/>
+    </inertial>
+    <visual name="visual">
+      <geometry>
+        <cylinder radius="0.16" length="0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="steering_joint" type="continuous">
+    <origin xyz="0.44 -0.717609 0.938807" rpy="-0.87 0 0"/>
     <parent link="chassis"/>
-    <child link="fl_axle"/>
-    <origin xyz="0.767 -1.41 0.3" rpy="-0.089 0 0"/>
-    <axis xyz="0 0 1"/>
-  </joint>
-  <joint name="fr_steer_joint" type="continuous">
-    <parent link="chassis"/>
-    <child link="fr_axle"/>
-    <origin xyz="-0.767 -1.41 0.3" rpy="-0.089 0 0"/>
-    <axis xyz="0 0 1"/>
-  </joint>
-  <joint name="front_left_wheel_joint" type="continuous">
-    <parent link="fl_axle"/>
-    <child link="front_left_wheel"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis xyz="1 0 0"/>
-  </joint>
-  <joint name="front_right_wheel_joint" type="continuous">
-    <parent link="fr_axle"/>
-    <child link="front_right_wheel"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis xyz="1 0 0"/>
-  </joint>
-  <joint name="rear_left_wheel_joint" type="continuous">
-    <parent link="chassis"/>
-    <child link="rear_left_wheel"/>
-    <origin xyz="0.793 1.45 0.3" rpy="0 0 0"/>
-    <axis xyz="1 0 0"/>
-  </joint>
-  <joint name="rear_right_wheel_joint" type="continuous">
-    <parent link="chassis"/>
-    <child link="rear_right_wheel"/>
-    <origin xyz="-0.793 1.45 0.3" rpy="0 0 0"/>
-    <axis xyz="1 0 0"/>
-  </joint>
+    <child link="steering_wheel"/>
+    <axis xyz="0 1 0.84365"/>
+    </joint>
+
+    <joint name="fl_steer_joint" type="continuous">
+      <parent link="chassis"/>
+      <child link="fl_axle"/>
+      <origin xyz="0.767 -1.41 0.3" rpy="-0.089 0 0"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+    <joint name="fr_steer_joint" type="continuous">
+      <parent link="chassis"/>
+      <child link="fr_axle"/>
+      <origin xyz="-0.767 -1.41 0.3" rpy="-0.089 0 0"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+    <joint name="front_left_wheel_joint" type="continuous">
+      <parent link="fl_axle"/>
+      <child link="front_left_wheel"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+    </joint>
+    <joint name="front_right_wheel_joint" type="continuous">
+      <parent link="fr_axle"/>
+      <child link="front_right_wheel"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+    </joint>
+    <joint name="rear_left_wheel_joint" type="continuous">
+      <parent link="chassis"/>
+      <child link="rear_left_wheel"/>
+      <origin xyz="0.793 1.45 0.3" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+    </joint>
+    <joint name="rear_right_wheel_joint" type="continuous">
+      <parent link="chassis"/>
+      <child link="rear_right_wheel"/>
+      <origin xyz="-0.793 1.45 0.3" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+    </joint>
 
 
-  <gazebo reference="chassis">
-    <sensor name='laser' type='ray'>
-      <pose frame=''>0 -2.4 0.5 0 0.05 -1.5707</pose>
-      <ray>
-        <scan>
-          <horizontal>
-            <samples>640</samples>
-            <resolution>1</resolution>
-            <min_angle>-2.26889</min_angle>
-            <max_angle>2.2689</max_angle>
-          </horizontal>
-          <vertical>
-            <samples>1</samples>
-            <min_angle>0</min_angle>
-            <max_angle>0</max_angle>
-          </vertical>
-        </scan>
-        <range>
-          <min>0.2</min>
-          <max>30</max>
-          <resolution>0.01</resolution>
-        </range>
-      </ray>
-      <plugin name='laser' filename='libRayPlugin.so'/>
-      <always_on>1</always_on>
-      <update_rate>30</update_rate>
-      <visualize>1</visualize>
-    </sensor>
-  </gazebo>
+    <gazebo reference="chassis">
+      <sensor name='laser' type='ray'>
+        <pose frame=''>0 -2.4 0.5 0 0.05 -1.5707</pose>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>640</samples>
+              <resolution>1</resolution>
+              <min_angle>-2.26889</min_angle>
+              <max_angle>2.2689</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>1</samples>
+              <min_angle>0</min_angle>
+              <max_angle>0</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.2</min>
+            <max>30</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name='laser' filename='libRayPlugin.so'/>
+        <always_on>1</always_on>
+        <update_rate>30</update_rate>
+        <visualize>1</visualize>
+      </sensor>
+    </gazebo>
 
-</robot>
+
+  </robot>
