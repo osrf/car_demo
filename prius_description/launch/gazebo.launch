@@ -9,5 +9,5 @@
     <arg name="world_name" value="$(find car_demo)/worlds/mcity.world"/>
   </include>
 
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model prius"/>
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 3 -y -12 -z 0.5 -Y 1.5708 -model prius"/>
 </launch>
