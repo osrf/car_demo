@@ -228,6 +228,14 @@
     </plugin>
   </gazebo>
 
+  <gazebo>
+      <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+        <robotNamespace>/prius</robotNamespace>
+        <jointName>rear_right_wheel_joint, rear_left_wheel_joint, front_right_wheel_joint, front_left_wheel_joint, fr_steer_joint, fl_steer_joint, steering_joint</jointName>
+        <updateRate>100.0</updateRate>
+        <alwaysOn>true</alwaysOn>
+      </plugin>
+  </gazebo>
   <gazebo reference="chassis">
     <sensor name='laser' type='ray'>
       <pose frame=''>0 -2.4 0.5 0 0.05 -1.5707</pose>
