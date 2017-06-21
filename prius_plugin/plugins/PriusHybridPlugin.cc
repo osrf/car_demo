@@ -20,6 +20,7 @@
 #include <ignition/transport/AdvertiseOptions.hh>
 
 #include "PriusHybridPlugin.hh"
+#include <gazebo/common/Console.hh>
 #include <gazebo/common/PID.hh>
 #include <gazebo/common/Time.hh>
 
@@ -249,7 +250,8 @@ PriusHybridPlugin::~PriusHybridPlugin()
 /////////////////////////////////////////////////
 void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  gzinfo << "PriusHybridPlugin Loading Parameters" << std::endl;
+  gzwarn << "PriusHybridPlugin loading params" << std::endl;
+
   this->dataPtr->model = _model;
   this->dataPtr->world = this->dataPtr->model->GetWorld();
   auto physicsEngine = this->dataPtr->world->Physics();
@@ -610,9 +612,9 @@ void PriusHybridPlugin::Update()
       this->dataPtr->frWheelSteeringJoint->Position();
 
   this->dataPtr->flWheelAngularVelocity =
-    this->dataPtr->flWheelJoint->GetVelocity(1);
+    this->dataPtr->flWheelJoint->GetVelocity(0);
   this->dataPtr->frWheelAngularVelocity =
-    this->dataPtr->frWheelJoint->GetVelocity(1);
+    this->dataPtr->frWheelJoint->GetVelocity(0);
   this->dataPtr->blWheelAngularVelocity =
     this->dataPtr->blWheelJoint->GetVelocity(0);
   this->dataPtr->brWheelAngularVelocity =
@@ -706,17 +708,17 @@ void PriusHybridPlugin::Update()
 
   brakePercent = ignition::math::clamp(
       brakePercent, this->dataPtr->minBrakePercent, 1.0);
-  this->dataPtr->flWheelJoint->SetParam("friction", 1,
+  this->dataPtr->flWheelJoint->SetParam("friction", 0,
       brakePercent * this->dataPtr->frontBrakeTorque);
-  this->dataPtr->frWheelJoint->SetParam("friction", 1,
+  this->dataPtr->frWheelJoint->SetParam("friction", 0,
       brakePercent * this->dataPtr->frontBrakeTorque);
   this->dataPtr->blWheelJoint->SetParam("friction", 0,
       brakePercent * this->dataPtr->backBrakeTorque);
   this->dataPtr->brWheelJoint->SetParam("friction", 0,
       brakePercent * this->dataPtr->backBrakeTorque);
 
-  this->dataPtr->flWheelJoint->SetForce(1, flGasTorque);
-  this->dataPtr->frWheelJoint->SetForce(1, frGasTorque);
+  this->dataPtr->flWheelJoint->SetForce(0, flGasTorque);
+  this->dataPtr->frWheelJoint->SetForce(0, frGasTorque);
   this->dataPtr->blWheelJoint->SetForce(0, blGasTorque);
   this->dataPtr->brWheelJoint->SetForce(0, brGasTorque);
 
