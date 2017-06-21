@@ -32,8 +32,4 @@ install(TARGETS PriusHybridPlugin
 )
 
 install(DIRECTORY models DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
-
-
-# TODO(tfoote) replace installers add_subdirectory(models)
-# TODO(tfoote) replace installers add_subdirectory(worlds)
+install(DIRECTORY worlds DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
