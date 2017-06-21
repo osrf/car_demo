@@ -249,6 +249,7 @@ PriusHybridPlugin::~PriusHybridPlugin()
 /////////////////////////////////////////////////
 void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
+  gzinfo << "PriusHybridPlugin Loading Parameters" << std::endl;
   this->dataPtr->model = _model;
   this->dataPtr->world = this->dataPtr->model->GetWorld();
   auto physicsEngine = this->dataPtr->world->Physics();
