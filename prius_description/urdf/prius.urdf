@@ -43,7 +43,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://prius_description/meshes/Hybrid.obj" scale="0.01 0.01 0.01"/>
+        <mesh filename="package://prius_description/meshes/hybrid_body.obj" scale="0.01 0.01 0.01"/>
       </geometry>
     </visual>
 
@@ -141,6 +141,12 @@
         <sphere radius="0.31265"/>
       </geometry>
     </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/wheel.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
   </link>
   <link name="front_right_wheel">
     <inertial>
@@ -153,6 +159,12 @@
         <sphere radius="0.31265"/>
       </geometry>
     </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/wheel.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
   </link>
   <link name="rear_left_wheel">
     <inertial>
@@ -165,6 +177,12 @@
         <sphere radius="0.31265"/>
       </geometry>
     </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/wheel.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
   </link>
   <link name="rear_right_wheel">
     <inertial>
@@ -177,16 +195,22 @@
         <sphere radius="0.31265"/>
       </geometry>
     </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/wheel.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
   </link>
   <link name="steering_wheel">
     <inertial>
       <mass value="1.0"/>
-      <origin xyz="0 0 0"/>
       <inertia ixx="0.14583300" ixy="0.0" ixz="0.0" iyy="0.14583300" iyz="0.0" izz="0.125"/>
     </inertial>
-    <visual name="visual">
+    <visual>
+      <origin xyz="0 0 0.1" rpy="1.302101 0 0"/>
       <geometry>
-        <cylinder radius="0.16" length="0.01"/>
+        <mesh filename="package://prius_description/meshes/steering_wheel.obj" scale="0.01 0.01 0.01"/>
       </geometry>
     </visual>
   </link>
