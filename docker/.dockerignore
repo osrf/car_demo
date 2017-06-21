@@ -1,4 +1,0 @@
-build-docker-image.bash
-deploy-ec2.bash
-run-to-build.bash
-build-pc.bash
