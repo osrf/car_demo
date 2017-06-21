@@ -1,0 +1,86 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 13.03.2017 17:41:19
+
+newmtl Grass
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\Cole\Dropbox\OSRF\Mcity\Grass.png
+	map_Kd C:\Users\Cole\Dropbox\OSRF\Mcity\Grass.png
+
+newmtl Concrete_Ground
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\Cole\Dropbox\OSRF\Mcity\Concrete_Ground.png
+	map_Kd C:\Users\Cole\Dropbox\OSRF\Mcity\Concrete_Ground.png
+
+newmtl Colors
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.2510 0.2706 0.4235
+	Kd 0.2510 0.2706 0.4235
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\Cole\Dropbox\OSRF\Mcity\Colors.png
+	map_Kd C:\Users\Cole\Dropbox\OSRF\Mcity\Colors.png
+
+newmtl Buildings
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\Cole\Dropbox\OSRF\Mcity\Buildings.png
+	map_Kd C:\Users\Cole\Dropbox\OSRF\Mcity\Buildings.png
+
+newmtl Brick
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\Cole\Dropbox\OSRF\Mcity\Brick.png
+	map_Kd C:\Users\Cole\Dropbox\OSRF\Mcity\Brick.png
+
+newmtl Tunnel
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.7529 0.7686 0.5686
+	Kd 0.7529 0.7686 0.5686
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\Cole\Dropbox\OSRF\Mcity\Tunnel.png
+	map_Kd C:\Users\Cole\Dropbox\OSRF\Mcity\Tunnel.png
