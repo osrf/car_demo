@@ -1,0 +1,10 @@
+<package format="2">
+  <name>car_demo</name>
+  <version>0.0.1</version>
+  <description>
+  The car demo
+  </description>
+  <maintainer email="tfoote@openrobotics.org">Tully Foote</maintainer>
+  <license>BSD</license>
+  <depend>gazebo_ros</depend>
+</package>
