@@ -35,5 +35,10 @@ RUN /bin/bash -c 'cd /tmp/workspace \
 
 RUN rosdep update
 
+RUN wget -P /tmp/ https://bitbucket.org/osrf/gazebo_models/get/default.tar.gz \
+ && mkdir -p $HOME/.gazebo/models \
+ && tar -xvf /tmp/default.tar.gz -C $HOME/.gazebo/models --strip 1 \
+ && rm /tmp/default.tar.gz
+
 
 CMD ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /tmp/workspace/devel/setup.bash && roslaunch prius_description gazebo.launch"]
