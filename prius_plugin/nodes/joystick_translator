@@ -6,6 +6,10 @@ from prius_msgs.msg import Control
 from sensor_msgs.msg import Joy
 
 
+STEERING_AXIS = 0
+THROTTLE_AXIS = 4
+
+
 class Translator:
     def __init__(self):
         self.sub = rospy.Subscriber("joy", Joy, self.callback)
@@ -22,13 +26,13 @@ class Translator:
         rospy.logdebug("joy_translater received axes %s",message.axes)
         command = Control()
         command.header = message.header
-        if message.axes[3] >= 0:
-            command.throttle = message.axes[3]
+        if message.axes[THROTTLE_AXIS] >= 0:
+            command.throttle = message.axes[THROTTLE_AXIS]
             command.brake = 0.0
         else:
-            command.brake = message.axes[3] * -1
+            command.brake = message.axes[THROTTLE_AXIS] * -1
             command.throttle = 0.0
-        command.steer = message.axes[0]
+        command.steer = message.axes[STEERING_AXIS]
         self.last_published = message
         self.pub.publish(command)
 
