@@ -332,6 +332,21 @@ void PriusHybridPlugin::OnPriusCommand(const prius_msgs::Control::ConstPtr &msg)
   // Throttle command
   double throttle = ignition::math::clamp(msg->throttle, 0.0, 1.0);
   this->dataPtr->gasPedalPercent = throttle;
+
+  switch (msg->shift_gears)
+  {
+    case prius_msgs::Control::NEUTRAL:
+      this->dataPtr->directionState = PriusHybridPluginPrivate::NEUTRAL;
+      break;
+    case prius_msgs::Control::FORWARD:
+      this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
+      break;
+    case prius_msgs::Control::REVERSE:
+      this->dataPtr->directionState = PriusHybridPluginPrivate::REVERSE;
+      break;
+    default:
+      break;
+  }
 }
 
 /////////////////////////////////////////////////
