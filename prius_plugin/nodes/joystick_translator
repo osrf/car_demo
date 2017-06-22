@@ -34,13 +34,13 @@ class Translator:
             command.throttle = 0.0
 
         if message.buttons[3]:
-            command.shift_gears = Joy.FORWARD
+            command.shift_gears = Control.FORWARD
         elif message.buttons[1]:
-            command.shift_gears = Joy.NEUTRAL
+            command.shift_gears = Control.NEUTRAL
         elif message.buttons[0]:
-            command.shift_gears = Joy.REVERSE
+            command.shift_gears = Control.REVERSE
         else:
-            command.shift_gears = Joy.NO_COMMAND
+            command.shift_gears = Control.NO_COMMAND
 
         command.steer = message.axes[STEERING_AXIS]
         self.last_published = message
