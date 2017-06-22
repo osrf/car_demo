@@ -508,9 +508,9 @@
             <max_angle>3.14</max_angle>
           </horizontal>
           <vertical>
-            <samples>3</samples>
-            <min_angle>-0.35</min_angle>
-            <max_angle>-0.1</max_angle>
+            <samples>8</samples>
+            <min_angle>-0.1</min_angle>
+            <max_angle>-0.35</max_angle>
           </vertical>
         </scan>
         <range>
@@ -519,7 +519,7 @@
           <resolution>0.01</resolution>
         </range>
       </ray>
-      <plugin name='center_laser' filename='libgazebo_ros_laser.so'>
+      <plugin name='center_laser' filename='libgazebo_ros_block_laser.so'>
         <topicName>/prius/center_laser/scan</topicName>
         <frameName>center_laser_link</frameName>
       </plugin>
