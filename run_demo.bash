@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# Runs a docker container with the image created by build_demo.bash
+# Requires
+#   docker
+#   nvidia-docker 
+#   an X server
+# Recommended
+#   A joystick mounted to /dev/input/js0 or /dev/input/js1
 
 until sudo nvidia-docker ps
 do
@@ -23,7 +30,6 @@ then
     chmod a+r $XAUTH
 fi
 
-# Display is hard-coded to :0 because that's what the startup scripts on AWS will generate
 sudo nvidia-docker run -it \
   -e DISPLAY \
   -e QT_X11_NO_MITSHM=1 \
@@ -31,8 +37,7 @@ sudo nvidia-docker run -it \
   -v "$XAUTH:$XAUTH" \
   -v "/tmp/.X11-unix:/tmp/.X11-unix" \
   -v "/etc/localtime:/etc/localtime:ro" \
-  -v "/var/run/spnav.sock:/var/run/spnav.sock" \
   -v "/dev/input:/dev/input" \
   --privileged \
   --rm=true \
-  car_demo
+  osrf/car_demo
