@@ -208,7 +208,7 @@
       <inertia ixx="0.14583300" ixy="0.0" ixz="0.0" iyy="0.14583300" iyz="0.0" izz="0.125"/>
     </inertial>
     <visual>
-      <origin xyz="0 0 0.1" rpy="1.302101 0 0"/>
+      <origin xyz="0 0 0" rpy="1.302101 0 0"/>
       <geometry>
         <mesh filename="package://prius_description/meshes/steering_wheel.obj" scale="0.01 0.01 0.01"/>
       </geometry>
@@ -216,7 +216,7 @@
   </link>
 
   <joint name="steering_joint" type="continuous">
-    <origin xyz="0.44 -0.717609 0.938807" rpy="-0.87 0 0"/>
+    <origin xyz="0.357734 -0.627868 0.988243" rpy="-1.302101 0 0"/>
     <parent link="chassis"/>
     <child link="steering_wheel"/>
     <axis xyz="0 0 1"/>
