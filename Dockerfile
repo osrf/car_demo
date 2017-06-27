@@ -24,10 +24,6 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` 
     ros-kinetic-joy \
  && apt-get clean
 
-RUN wget -P /tmp/ https://bitbucket.org/osrf/gazebo_models/get/default.tar.gz \
- && mkdir -p $HOME/.gazebo/models \
- && tar -xvf /tmp/default.tar.gz -C $HOME/.gazebo/models --strip 1 \
- && rm /tmp/default.tar.gz
 
 RUN mkdir -p /tmp/workspace/src
 COPY prius_description /tmp/workspace/src/prius_description
