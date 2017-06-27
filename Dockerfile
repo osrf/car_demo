@@ -39,4 +39,4 @@ RUN /bin/bash -c 'cd /tmp/workspace \
 
 RUN rosdep update
 
-CMD ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /tmp/workspace/devel/setup.bash && roslaunch prius_description gazebo.launch"]
+CMD ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /tmp/workspace/devel/setup.bash && roslaunch car_demo demo.launch"]
