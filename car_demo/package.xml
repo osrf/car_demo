@@ -5,7 +5,7 @@
   The car demo
   </description>
   <maintainer email="tfoote@openrobotics.org">Tully Foote</maintainer>
-  <license>BSD</license>
+  <license>APACHE 2.0</license>
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>gazebo_ros</depend>
