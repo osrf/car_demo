@@ -28,7 +28,7 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` 
 RUN mkdir -p /tmp/workspace/src
 COPY prius_description /tmp/workspace/src/prius_description
 COPY prius_msgs /tmp/workspace/src/prius_msgs
-COPY prius_plugin /tmp/workspace/src/prius_plugins
+COPY car_demo /tmp/workspace/src/car_demo
 RUN /bin/bash -c 'cd /tmp/workspace \
  && source /opt/ros/kinetic/setup.bash \
  && catkin_make'
