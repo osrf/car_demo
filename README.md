@@ -4,6 +4,11 @@ This is a simulation of a Prius in [gazebo 8](http://gazebosim.org) with sensor 
 The car's throttle, brake, steering, and gear shifting are controlled by publishing a ROS message.
 A ROS node allows driving with a gamepad or joystick.
 
+# Video + Pictures
+
+A video and screenshots of the demo can be seen in this blog post: https://www.osrfoundation.org/simulated-car-demo/
+
+![Prius Image](https://www.osrfoundation.org/wordpress2/wp-content/uploads/2017/06/prius_roundabout_exit.png)
 
 # Requirements
 
