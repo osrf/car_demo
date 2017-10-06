@@ -317,10 +317,10 @@ void PriusHybridPlugin::OnPriusCommand(const prius_msgs::Control::ConstPtr &msg)
   this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
 
   // Steering wheel command
-  double handWheelRange =
-    this->dataPtr->handWheelHigh - this->dataPtr->handWheelLow;
+  double handCmd = (msg->steer < 0.)
+    ? (msg->steer * -this->dataPtr->handWheelLow)
+    : (msg->steer * this->dataPtr->handWheelHigh);
 
-  double handCmd = msg->steer * handWheelRange;
   handCmd = ignition::math::clamp(handCmd, this->dataPtr->handWheelLow,
       this->dataPtr->handWheelHigh);
   this->dataPtr->handWheelCmd = handCmd;
