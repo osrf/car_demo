@@ -320,7 +320,11 @@ void PriusHybridPlugin::OnPriusCommand(const prius_msgs::Control::ConstPtr &msg)
   double handWheelRange =
     this->dataPtr->handWheelHigh - this->dataPtr->handWheelLow;
 
-  double handCmd = msg->steer * handWheelRange;
+  //double handCmd = msg->steer * handWheelRange;
+  double handCmd = (msg->steer < 0.)
+    ? (msg->steer * -this->dataPtr->handWheelLow)
+    : (msg->steer * this->dataPtr->handWheelHigh);
+    
   handCmd = ignition::math::clamp(handCmd, this->dataPtr->handWheelLow,
       this->dataPtr->handWheelHigh);
   this->dataPtr->handWheelCmd = handCmd;
