@@ -1140,9 +1140,9 @@ void PriusHybridPlugin::Update()
   }
 
   brakePercent = ignition::math::clamp(brakePercent, 0.0, 1.0);
-  dPtr->flWheelJoint->SetParam("friction", 0,
+  dPtr->flWheelJoint->SetParam("friction", 1,
       dPtr->flJointFriction + brakePercent * dPtr->frontBrakeTorque);
-  dPtr->frWheelJoint->SetParam("friction", 0,
+  dPtr->frWheelJoint->SetParam("friction", 1,
       dPtr->frJointFriction + brakePercent * dPtr->frontBrakeTorque);
   dPtr->blWheelJoint->SetParam("friction", 0,
       dPtr->blJointFriction + brakePercent * dPtr->backBrakeTorque);

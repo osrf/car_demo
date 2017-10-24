@@ -25,7 +25,12 @@
     <minDepth>0.005</minDepth>
     <kp>1e8</kp>
   </gazebo>
-
+<gazebo>
+  <plugin name= "GetPosePlugin" filename ="libGetPosePlugin.so"/>
+</gazebo>
+<gazebo>
+  <plugin name= "SetPosePlugin" filename ="libSetPosePlugin.so"/>
+</gazebo>
   <link name="base_link">
     <inertial>
       <mass value="1"/>
@@ -613,14 +618,14 @@
           <stddev>0.007</stddev>
         </noise>
       </camera>
-      <plugin name="front_camera_controller" filename="libgazebo_ros_camera.so">
-        <alwaysOn>false</alwaysOn>
-        <updateRate>0.0</updateRate>
-        <cameraName>/prius/front_camera</cameraName>
+      <plugin name= 'CameraBboxPlugin' filename='libCameraBboxPlugin.so'>
+        <always_on>true</always_on>
+        <update_rate>30.0</update_rate>
+        <cameraName>prius/front_camera</cameraName>
         <imageTopicName>image_raw</imageTopicName>
-        <cameraInfoTopicName>/prius/front_camera_info</cameraInfoTopicName>
+        <cameraInfoTopicname>camera_info</cameraInfoTopicname>
         <frameName>camera_link</frameName>
-        <hackBaseline>0.07</hackBaseline>
+        <hackBaseLine>0.07</hackBaseLine>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
         <distortionK3>0.0</distortionK3>
