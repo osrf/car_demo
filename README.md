@@ -23,6 +23,8 @@ This demo has been tested on Ubuntu Xenial (16.04)
 * A joystick
 * A joystick driver which creates links to `/dev/input/js0` or `/dev/input/js1`
 
+This has been tested with the Logitech F710 in Xbox mode. If you have a different joystick you may need to adjust the parameters for the very basic joystick_translator node: https://github.com/osrf/car_demo/blob/master/car_demo/nodes/joystick_translator
+
 # Building
 
 First clone the repo, then run the script `build_demo.bash`.
