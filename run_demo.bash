@@ -3,16 +3,10 @@
 # Runs a docker container with the image created by build_demo.bash
 # Requires
 #   docker
-#   nvidia-docker 
+#   nvidia-docker2
 #   an X server
 # Recommended
 #   A joystick mounted to /dev/input/js0 or /dev/input/js1
-
-until sudo nvidia-docker ps
-do
-    echo "Waiting for docker server"
-    sleep 1
-done
 
 
 # Make sure processes in the container can connect to the x server
@@ -30,14 +24,15 @@ then
     chmod a+r $XAUTH
 fi
 
-sudo nvidia-docker run -it \
-  -e DISPLAY \
-  -e QT_X11_NO_MITSHM=1 \
-  -e XAUTHORITY=$XAUTH \
-  -v "$XAUTH:$XAUTH" \
-  -v "/tmp/.X11-unix:/tmp/.X11-unix" \
-  -v "/etc/localtime:/etc/localtime:ro" \
-  -v "/dev/input:/dev/input" \
+docker run -it --rm \
+  --runtime=nvidia \
+  --env DISPLAY \
+  --env QT_X11_NO_MITSHM=1 \
+  --env XAUTHORITY=$XAUTH \
+  --volume "$XAUTH:$XAUTH" \
+  --volume "/tmp/.X11-unix:/tmp/.X11-unix" \
+  --volume "/etc/localtime:/etc/localtime:ro" \
+  --volume "/dev/input:/dev/input" \
   --privileged \
-  --rm=true \
-  osrf/car_demo
+  osrf/car_demo \
+  roslaunch car_demo demo.launch
