@@ -1,4 +1,4 @@
-FROM osrf/ros:kinetic-desktop
+FROM osrf/ros:melodic-desktop
 
 # setup keys
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D2486D2DD83DB69272AFE98867170598AF249743
@@ -13,21 +13,21 @@ RUN mkdir -p $CATKIN_WS/src
 WORKDIR $CATKIN_WS/src
 
 # copy source code
-COPY prius_description .
-COPY prius_msgs .
-COPY car_demo .
+COPY prius_description ./prius_description
+COPY prius_msgs ./prius_msgs
+COPY car_demo ./car_demo
+RUN git clone https://github.com/ros-planning/navigation.git
+RUN git clone https://github.com/ros-drivers/joystick_drivers.git
 
 # install package dependacies
 RUN apt-get -qq update && \
     apt-get -qq install -y \
-        python-catkin-tools && \
+      python-catkin-tools && \
     rosdep update && \
     rosdep install -y \
       --from-paths . \
       --ignore-src \
       --rosdistro ${ROS_DISTRO} \
-      --skip-keys=prius_msgs \
-      --skip-keys=prius_description \
       --as-root=apt:false && \
     rm -rf /var/lib/apt/lists/*
 
