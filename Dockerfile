@@ -24,11 +24,9 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` 
     ros-kinetic-joy \
  && apt-get clean
 
-ARG DOCKER_CMD="server"
 RUN apt-get install net-tools
 RUN mkdir -p /tmp/workspace/script
 COPY rosdocker.bash /tmp/workspace/script
-
 
 RUN mkdir -p /tmp/workspace/src
 COPY prius_description /tmp/workspace/src/prius_description
@@ -41,9 +39,6 @@ RUN /bin/bash -c 'cd /tmp/workspace \
 
 CMD ["/bin/bash", "-c", "shopt -s expand_aliases \
     && source /opt/ros/kinetic/setup.bash \
-    && shopt \
-    && source /tmp/workspace/script/rosdocker.bash \
-    && rosdocker client 172.17.0.1 \
     && source /tmp/workspace/devel/setup.bash \
     && env | grep \"ROS_MASTER_URI\" \
     && env | grep \"ROS_HOST_NAME\" \
