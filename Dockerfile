@@ -39,6 +39,7 @@ RUN /bin/bash -c 'cd /tmp/workspace \
 
 CMD ["/bin/bash", "-c", "shopt -s expand_aliases \
     && source /opt/ros/kinetic/setup.bash \
+    && source /tmp/workspace/script/rosdocker.bash client 172.17.0.1\
     && source /tmp/workspace/devel/setup.bash \
     && env | grep \"ROS_MASTER_URI\" \
     && env | grep \"ROS_HOST_NAME\" \
