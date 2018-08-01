@@ -34,23 +34,10 @@ function _func_rosdockerexit(){
     export PS1="\u@\h:\w\\$ "
 }
 
-function _func_comp_rosdocker(){
-    local cur=${COMP_WORDS[COMP_CWORD]}
-    if [ "$COMP_CWORD" -eq 1 ]; then
-        COMPREPLY=( $(compgen -W "server client exit" -- $cur) )
-    fi
-}
-
-function _func_rosdocker() {
-    # Get now eth0 or wlan0 IP address
-    if [ $1 = "exit" ]; then
-        _func_rosdockerexit
-    elif [ $1 = "server" ]; then
-        _func_rosdockerserver
-    elif [ $1 = "client" ]; then
-        _func_rosdockerclient $2
-    fi
-}
-
-alias rosdocker=_func_rosdocker
-complete -o default -F _func_comp_rosdocker rosdocker
+if [ $1 = "exit" ]; then
+    _func_rosdockerexit
+elif [ $1 = "server" ]; then
+    _func_rosdockerserver
+elif [ $1 = "client" ]; then
+    _func_rosdockerclient $2
+fi
