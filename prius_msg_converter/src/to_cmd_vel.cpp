@@ -1,4 +1,5 @@
 #include <to_cmd_vel.hpp>
+#include <ros/console.h>
 
 #include <cmath>
 
@@ -27,6 +28,8 @@ pmc::ToCmdVel::ToCmdVel():
 
   cmd_vel_sub_ = nh_.subscribe("/cmd_vel", 1, &pmc::ToCmdVel::CmdVelCallback, this);
   current_state_sub_ = nh_.subscribe("/base_pose_ground_truth", 1, &pmc::ToCmdVel::CurStateCallback, this);
+
+  ROS_INFO("Prius message converter is ready.");
 }
 
 pmc::ToCmdVel::~ToCmdVel(){ }
@@ -49,7 +52,7 @@ void pmc::ToCmdVel::CtrlUpdate()
 {  
   static ros::Rate r(pub_rate_);
   static prius_msgs::Control ctrl_msg;
-  
+
   while(ros::ok()){
     ros::spinOnce();
     
@@ -67,11 +70,9 @@ void pmc::ToCmdVel::CtrlUpdate()
     obj_ang_vel = cmd_vel_.angular.z;
     cmd_vel_mtx_.unlock();
 
-    std::cout << "obj_vel : ";
-    std::cout << obj_vel << std::endl;
-    std::cout << "current_vel :";
-    std::cout << current_vel << std::endl;
-    
+    ROS_DEBUG_STREAM_NAMED("statement","objective velocity : " << obj_vel);
+    ROS_DEBUG_STREAM_NAMED("statement","current velocity : " << current_vel);
+        
     // set time stamp for control input
     ctrl_msg.header.stamp = ros::Time::now();
     
@@ -87,10 +88,11 @@ void pmc::ToCmdVel::CtrlUpdate()
       ctrl_msg.throttle = 0.0;
       ctrl_msg.brake = 1.0;
       ctrl_msg.steer = 0.0;
-      std::cout << "brake :";
-      std::cout << ctrl_msg.brake << std::endl;
-      std::cout << "throttle : ";
-      std::cout << ctrl_msg.throttle << std::endl;
+
+      ROS_DEBUG_STREAM_NAMED("control","steer angle : " << ctrl_msg.steer);
+      ROS_DEBUG_STREAM_NAMED("control","throttle : " << ctrl_msg.throttle);
+      ROS_DEBUG_STREAM_NAMED("control","brake : " << ctrl_msg.throttle);
+
       control_msg_pub_.publish(ctrl_msg);
       r.sleep();
     }
@@ -110,11 +112,9 @@ void pmc::ToCmdVel::CtrlUpdate()
     static double ctrl_vel = 0;
     err_vel = std::fabs(obj_vel) - current_vel;
 
-    std::cout << "err_vel : ";
-    std::cout << err_vel << std::endl;
-    std::cout << "err_int_vel : ";
-    std::cout << err_int_vel << std::endl;
-        
+    ROS_DEBUG_STREAM_NAMED("statement","error veolocity : " << err_vel);
+    ROS_DEBUG_STREAM_NAMED("statement","integration error veolocity : " << err_int_vel);
+            
     switch(ctrl_msg.shift_gears){
     case prius_msgs::Control::FORWARD:
       if(0<err_vel){
@@ -147,16 +147,14 @@ void pmc::ToCmdVel::CtrlUpdate()
     default:
       break;
     }
- 
-    std::cout << "brake :";
-    std::cout << ctrl_msg.brake << std::endl;
-    std::cout << "throttle : ";
-    std::cout << ctrl_msg.throttle << std::endl;
+
+    ROS_DEBUG_STREAM_NAMED("control","steer angle : " << ctrl_msg.steer);
+    ROS_DEBUG_STREAM_NAMED("control","throttle : " << ctrl_msg.throttle);
+    ROS_DEBUG_STREAM_NAMED("control","brake : " << ctrl_msg.throttle);
   
     // publish the ctrl msg
     control_msg_pub_.publish(ctrl_msg);
     r.sleep();
-
   }
 }
 
