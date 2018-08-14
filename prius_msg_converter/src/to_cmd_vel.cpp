@@ -30,6 +30,13 @@ pmc::ToCmdVel::ToCmdVel():
   cmd_vel_sub_ = nh_.subscribe("/cmd_vel", 1, &pmc::ToCmdVel::CmdVelCallback, this);
   current_state_sub_ = nh_.subscribe("/base_pose_ground_truth", 1, &pmc::ToCmdVel::CurStateCallback, this);
 
+  // publish to stop
+  prius_msgs::Control ctrl_msg;
+  ctrl_msg.throttle = 0.0;
+  ctrl_msg.brake = 1.0;
+  ctrl_msg.steer = 0.0;
+  control_msg_pub_.publish(ctrl_msg);
+    
   ROS_INFO("Prius message converter is ready.");
 }
 
