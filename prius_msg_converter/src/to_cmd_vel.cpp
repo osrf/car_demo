@@ -8,15 +8,19 @@ pmc::ToCmdVel::ToCmdVel():
   wheel_base_(3.0),
   max_steer_angle_(0.6458),
   max_vel_(38.0),
-  k_throttle_(0.1),
-  k_brake_(0.1),
+  kp_throttle_(0.1),
+  ki_throttle_(0.1),
+  kp_brake_(0.1),
+  ki_brake_(0.1),
   pub_rate_(25.0)
 {
   nh_.param<double>(ros::this_node::getName() + "/wheel_base", wheel_base_, wheel_base_);
   nh_.param<double>(ros::this_node::getName() + "/max_steer_angle", max_steer_angle_, max_steer_angle_);
   nh_.param<double>(ros::this_node::getName() + "/max_velocity", max_vel_, max_vel_);
-  nh_.param<double>(ros::this_node::getName() + "/k_throttle", k_throttle_, k_throttle_);
-  nh_.param<double>(ros::this_node::getName() + "/k_brake", k_brake_, k_brake_);
+  nh_.param<double>(ros::this_node::getName() + "/kp_throttle", kp_throttle_, kp_throttle_);
+  nh_.param<double>(ros::this_node::getName() + "/ki_throttle", ki_throttle_, ki_throttle_);
+  nh_.param<double>(ros::this_node::getName() + "/kp_brake", kp_brake_, kp_brake_);
+  nh_.param<double>(ros::this_node::getName() + "/ki_brake", ki_brake_, ki_brake_);
   nh_.param<double>(ros::this_node::getName() + "/publish_rate", pub_rate_);
 
   control_msg_pub_ = nh_.advertise<prius_msgs::Control>("/prius", 1);
@@ -102,32 +106,40 @@ void pmc::ToCmdVel::CtrlUpdate()
     }
       
     static double err_vel = 0;
+    static double err_int_vel = 0;
     static double ctrl_vel = 0;
     err_vel = std::fabs(obj_vel) - current_vel;
+
     std::cout << "err_vel : ";
     std::cout << err_vel << std::endl;
-    
+    std::cout << "err_int_vel : ";
+    std::cout << err_int_vel << std::endl;
+        
     switch(ctrl_msg.shift_gears){
     case prius_msgs::Control::FORWARD:
       if(0<err_vel){
-        ctrl_vel = k_throttle_ * std::fabs(err_vel);
+        err_int_vel += err_vel;
+        ctrl_vel = kp_throttle_*std::fabs(err_vel) + ki_throttle_*std::fabs(err_int_vel);
         ctrl_vel = std::fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
         ctrl_msg.throttle = ctrl_vel;
       }
       else{
-        ctrl_vel = k_brake_ * std::fabs(err_vel);
+        err_int_vel -= err_vel;
+        ctrl_vel = kp_brake_*std::fabs(err_vel) + ki_brake_*std::fabs(err_int_vel);
         ctrl_vel = std::fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
         ctrl_msg.brake = ctrl_vel;   
       }
       break;
     case prius_msgs::Control::REVERSE:
       if(0<err_vel){
-        ctrl_vel = k_throttle_ * std::fabs(err_vel);
+        err_int_vel -= err_vel;
+        ctrl_vel = kp_throttle_*std::fabs(err_vel) + ki_throttle_*std::fabs(err_int_vel);
         ctrl_vel = std::fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
         ctrl_msg.throttle = ctrl_vel;
       }
       else{
-        ctrl_vel = k_brake_ * std::fabs(err_vel);
+        err_int_vel += err_vel;
+        ctrl_vel = kp_brake_*std::fabs(err_vel) + ki_brake_*std::fabs(err_int_vel);
         ctrl_vel = std::fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
         ctrl_msg.brake = ctrl_vel;   
       }

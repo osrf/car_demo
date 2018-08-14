@@ -46,8 +46,10 @@ namespace prius {
       double wheel_base_;
       double max_steer_angle_;
       double max_vel_;
-      double k_throttle_;
-      double k_brake_;
+      double kp_throttle_;
+      double ki_throttle_;
+      double kp_brake_;
+      double ki_brake_;
       double pub_rate_;
     };
   }

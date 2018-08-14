@@ -3,8 +3,10 @@
     <param name="wheel_base" value="2.7" type="double"/>
     <param name="max_steer_angle" value="0.47891" type="double"/>
     <param name="max_velocity" value="37.9983" type="double"/>
-    <param name="k_throttle" value="1.0" type="double"/>
-    <param name="k_brake" value="1.0" type="double"/>
+    <param name="kp_throttle" value="0.75" type="double"/>
+    <param name="ki_throttle" value="0.2" type="double"/>
+    <param name="kp_brake" value="0.5" type="double"/>
+    <param name="ki_brake" value="0.1" type="double"/>
     <param name="publish_rate" value="50" type="double"/>
   </node>
 </launch>
