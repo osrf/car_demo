@@ -4,6 +4,7 @@
 #include <cmath>
 
 namespace pmc = prius::msg_converter;
+using namespace std;
 
 pmc::ToCmdVel::ToCmdVel():
   wheel_base_(3.0),
@@ -79,7 +80,7 @@ void pmc::ToCmdVel::CtrlUpdate()
     // calculate control steer angle
     static double ctrl_angle = 0;
     ctrl_angle = atan((wheel_base_*obj_ang_vel)/current_vel)/(2.0*max_steer_angle_);
-    ctrl_angle = std::fabs(ctrl_angle) > 1.0 ? ctrl_angle/std::fabs(ctrl_angle) : ctrl_angle;
+    ctrl_angle = fabs(ctrl_angle) > 1.0 ? ctrl_angle/fabs(ctrl_angle) : ctrl_angle;
 
     ctrl_msg.steer = ctrl_angle;
 
@@ -110,7 +111,7 @@ void pmc::ToCmdVel::CtrlUpdate()
     static double err_vel = 0;
     static double err_int_vel = 0;
     static double ctrl_vel = 0;
-    err_vel = std::fabs(obj_vel) - current_vel;
+    err_vel = fabs(obj_vel) - current_vel;
 
     ROS_DEBUG_STREAM_NAMED("statement","error veolocity : " << err_vel);
     ROS_DEBUG_STREAM_NAMED("statement","integration error veolocity : " << err_int_vel);
@@ -119,28 +120,28 @@ void pmc::ToCmdVel::CtrlUpdate()
     case prius_msgs::Control::FORWARD:
       if(0<err_vel){
         err_int_vel += err_vel;
-        ctrl_vel = kp_throttle_*std::fabs(err_vel) + ki_throttle_*std::fabs(err_int_vel);
-        ctrl_vel = std::fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
+        ctrl_vel = kp_throttle_*fabs(err_vel) + ki_throttle_*fabs(err_int_vel);
+        ctrl_vel = fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
         ctrl_msg.throttle = ctrl_vel;
       }
       else{
         err_int_vel -= err_vel;
-        ctrl_vel = kp_brake_*std::fabs(err_vel) + ki_brake_*std::fabs(err_int_vel);
-        ctrl_vel = std::fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
+        ctrl_vel = kp_brake_*fabs(err_vel) + ki_brake_*fabs(err_int_vel);
+        ctrl_vel = fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
         ctrl_msg.brake = ctrl_vel;   
       }
       break;
     case prius_msgs::Control::REVERSE:
       if(0<err_vel){
         err_int_vel -= err_vel;
-        ctrl_vel = kp_throttle_*std::fabs(err_vel) + ki_throttle_*std::fabs(err_int_vel);
-        ctrl_vel = std::fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
+        ctrl_vel = kp_throttle_*fabs(err_vel) + ki_throttle_*fabs(err_int_vel);
+        ctrl_vel = fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
         ctrl_msg.throttle = ctrl_vel;
       }
       else{
         err_int_vel += err_vel;
-        ctrl_vel = kp_brake_*std::fabs(err_vel) + ki_brake_*std::fabs(err_int_vel);
-        ctrl_vel = std::fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
+        ctrl_vel = kp_brake_*fabs(err_vel) + ki_brake_*fabs(err_int_vel);
+        ctrl_vel = fabs(ctrl_vel) >= 1.0 ? 1.0 : ctrl_vel;
         ctrl_msg.brake = ctrl_vel;   
       }
       break;
