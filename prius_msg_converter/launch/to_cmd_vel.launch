@@ -1,0 +1,10 @@
+<launch>
+  <node name="prius_msg_to_cmd_vel_node" pkg="prius_msg_converter" type="prius_msg_to_cmd_vel" output="screen">
+    <param name="wheel_base" value="2.7" type="double"/>
+    <param name="max_steer_angle" value="0.47891" type="double"/>
+    <param name="max_velocity" value="37.9983" type="double"/>
+    <param name="k_throttle" value="1.0" type="double"/>
+    <param name="k_brake" value="1.0" type="double"/>
+    <param name="publish_rate" value="50" type="double"/>
+  </node>
+</launch>
