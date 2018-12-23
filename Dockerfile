@@ -19,7 +19,7 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` 
  && apt-get update \
  && apt-get install -y \
     gazebo9 \
-    ros-melodic-gazebo9-ros-pkgs \
+    ros-melodic-gazebo-ros-* \
     ros-melodic-fake-localization \
     ros-melodic-joy \
  && apt-get clean
