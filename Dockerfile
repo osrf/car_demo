@@ -14,8 +14,8 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` 
  && wget http://packages.osrfoundation.org/gazebo.key -O - | apt-key add - \
  && apt-get update \
  && apt-get install -y \
-    gazebo8 \
-    ros-kinetic-gazebo8-ros-pkgs \
+    gazebo9 \
+    ros-kinetic-gazebo9-ros-pkgs \
     ros-kinetic-fake-localization \
     ros-kinetic-joy \
  && apt-get clean
