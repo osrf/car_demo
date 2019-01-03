@@ -1,9 +1,5 @@
 FROM osrf/ros:kinetic-desktop
 
-LABEL com.nvidia.volumes.needed="nvidia_driver"
-ENV PATH /usr/local/nvidia/bin:${PATH}
-ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
-
 RUN apt-get update \
  && apt-get install -y \
     wget \
