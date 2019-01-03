@@ -3,12 +3,12 @@
 # Runs a docker container with the image created by build_demo.bash
 # Requires
 #   docker
-#   nvidia-docker 
+#   nvidia-docker2
 #   an X server
 # Recommended
 #   A joystick mounted to /dev/input/js0 or /dev/input/js1
 
-until sudo nvidia-docker ps
+until nvidia-docker ps
 do
     echo "Waiting for docker server"
     sleep 1
