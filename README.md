@@ -17,6 +17,7 @@ This demo has been tested on Ubuntu Xenial (16.04)
 * An X server
 * [Docker](https://www.docker.com/get-docker)
 * [nvidia-docker2](https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0))
+* The current user is a member of the docker group or other group with docker execution rights.
 
 # Recommended
 
