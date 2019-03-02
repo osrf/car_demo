@@ -300,9 +300,7 @@ PriusHybridPlugin::PriusHybridPlugin()
   int argc = 0;
   char *argv = nullptr;
   ros::init(argc, &argv, "PriusHybridPlugin");
-  ros::NodeHandle nh;
-  this->dataPtr->controlSub = nh.subscribe("prius", 10, &PriusHybridPlugin::OnPriusCommand, this);
-
+  this->robot_namespace_ = "";
   this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
   this->dataPtr->flWheelRadius = 0.3;
   this->dataPtr->frWheelRadius = 0.3;
@@ -369,6 +367,11 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->dataPtr->gznode = transport::NodePtr(new transport::Node());
   this->dataPtr->gznode->Init();
+
+  if (_sdf->HasElement("robotNamespace"))
+    this->robot_namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>() + "/";
+  ros::NodeHandle nh(this->robot_namespace_);
+  this->dataPtr->controlSub = nh.subscribe("prius", 10, &PriusHybridPlugin::OnPriusCommand, this);
 
   this->dataPtr->node.Subscribe("/prius/reset",
       &PriusHybridPlugin::OnReset, this);
