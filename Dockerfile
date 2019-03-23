@@ -30,4 +30,4 @@ RUN /bin/bash -c 'cd /tmp/workspace \
  && catkin_make'
 
 
-CMD ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /tmp/workspace/devel/setup.bash && roslaunch car_demo demo.launch"]
+CMD ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /tmp/workspace/devel/setup.bash && sudo chmod 777 /home/ && roslaunch car_demo demo.launch"]
