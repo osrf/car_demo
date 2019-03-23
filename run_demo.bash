@@ -20,4 +20,4 @@ python3 -m venv /tmp/car_demo_rocker_venv
 pip install -U git+https://github.com/osrf/rocker.git
 
 
-rocker --nvidia --user --devices /dev/input/js0 /dev/input/js1 -- osrf/car_demo
+rocker --nvidia --x11 --user --devices /dev/input/js0 /dev/input/js1 -- osrf/car_demo
