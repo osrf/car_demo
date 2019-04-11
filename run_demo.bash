@@ -14,10 +14,12 @@ do
     sleep 1
 done
 
-mkdir -p /tmp/car_demo_rocker_venv
-python3 -m venv /tmp/car_demo_rocker_venv
-. /tmp/car_demo_rocker_venv/bin/activate
-pip install -U git+https://github.com/osrf/rocker.git
-
+if ! [ -x "$(command -v git)" ]; then
+    echo "Rocker not found pulling from pip"
+    mkdir -p /tmp/car_demo_rocker_venv
+    python3 -m venv /tmp/car_demo_rocker_venv
+    . /tmp/car_demo_rocker_venv/bin/activate
+    pip install -U git+https://github.com/osrf/rocker.git
+fi
 
 rocker --nvidia --x11 --devices /dev/input/js0 /dev/input/js1 -- osrf/car_demo
