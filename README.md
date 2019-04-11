@@ -18,6 +18,7 @@ This demo has been tested on Ubuntu Xenial (16.04)
 * [Docker](https://www.docker.com/get-docker)
 * [nvidia-docker2](https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0))
 * The current user is a member of the docker group or other group with docker execution rights.
+* [rocker](https://github.com/osrf/rocker)
 
 # Recommended
 
