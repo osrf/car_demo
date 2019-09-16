@@ -315,6 +315,17 @@
     <child link="front_camera_link"/>
     <origin xyz="0 -0.4 1.4" rpy="0 0.05 -1.5707"/>
   </joint>
+  <link name="front_camera_link_optical">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="front_camera_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <parent link="front_camera_link"/>
+    <child link="front_camera_link_optical"/>
+  </joint>
 
   <link name="back_camera_link">
     <inertial>
@@ -326,6 +337,17 @@
     <parent link="chassis"/>
     <child link="back_camera_link"/>
     <origin xyz="0 1.45 1.4" rpy="0 0.05 1.5707"/>
+  </joint>
+  <link name="back_camera_link_optical">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="back_camera_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <parent link="back_camera_link"/>
+    <child link="back_camera_link_optical"/>
   </joint>
 
   <link name="left_camera_link">
@@ -339,6 +361,17 @@
     <child link="left_camera_link"/>
     <origin xyz="1 -0.7 1.0" rpy="0 0.05 1.0"/>
   </joint>
+  <link name="left_camera_link_optical">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="left_camera_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <parent link="left_camera_link"/>
+    <child link="left_camera_link_optical"/>
+  </joint>
 
   <link name="right_camera_link">
     <inertial>
@@ -350,6 +383,17 @@
     <parent link="chassis"/>
     <child link="right_camera_link"/>
     <origin xyz="-1 -0.7 1.0" rpy="0 0.05 2.1416"/>
+  </joint>
+  <link name="right_camera_link_optical">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="right_camera_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.5707 0 -1.5707"/>
+    <parent link="right_camera_link"/>
+    <child link="right_camera_link_optical"/>
   </joint>
 
   <link name="back_left_far_sonar_link">
@@ -618,8 +662,8 @@
         <updateRate>0.0</updateRate>
         <cameraName>/prius/front_camera</cameraName>
         <imageTopicName>image_raw</imageTopicName>
-        <cameraInfoTopicName>/prius/front_camera_info</cameraInfoTopicName>
-        <frameName>camera_link</frameName>
+        <cameraInfoTopicName>/prius/front_camera/camera_info</cameraInfoTopicName>
+        <frameName>front_camera_link_optical</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
@@ -655,8 +699,8 @@
         <updateRate>0.0</updateRate>
         <cameraName>/prius/back_camera</cameraName>
         <imageTopicName>image_raw</imageTopicName>
-        <cameraInfoTopicName>/prius/back_camera_info</cameraInfoTopicName>
-        <frameName>camera_link</frameName>
+        <cameraInfoTopicName>/prius/back_camera/camera_info</cameraInfoTopicName>
+        <frameName>back_camera_link_optical</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
@@ -692,8 +736,8 @@
         <updateRate>0.0</updateRate>
         <cameraName>/prius/left_camera</cameraName>
         <imageTopicName>image_raw</imageTopicName>
-        <cameraInfoTopicName>/prius/left_camera_info</cameraInfoTopicName>
-        <frameName>camera_link</frameName>
+        <cameraInfoTopicName>/prius/left_camera/camera_info</cameraInfoTopicName>
+        <frameName>left_camera_link_optical</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
@@ -729,8 +773,8 @@
         <updateRate>0.0</updateRate>
         <cameraName>/prius/right_camera</cameraName>
         <imageTopicName>image_raw</imageTopicName>
-        <cameraInfoTopicName>/prius/right_camera_info</cameraInfoTopicName>
-        <frameName>camera_link</frameName>
+        <cameraInfoTopicName>/prius/right_camera/camera_info</cameraInfoTopicName>
+        <frameName>right_camera_link_optical</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
