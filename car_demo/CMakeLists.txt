@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(car_demo)
 
 set (PRIUSCUP_MAJOR_VERSION 0)
@@ -11,8 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   prius_msgs
 )
 
-find_package(gazebo 9 REQUIRED)
-find_package(ignition-msgs1 REQUIRED)
+find_package(gazebo 11 REQUIRED)
+find_package(ignition-math4 REQUIRED)
 
 catkin_package(
  # INCLUDE_DIRS include
