@@ -1,8 +1,8 @@
 # Demo of Prius in ROS/GAZEBO
 
-This is a simulation of a Prius in [gazebo 9](http://gazebosim.org) with sensor data being published using [ROS kinetic](http://wiki.ros.org/kinetic/Installation)
+This is a simulation of a Prius in [gazebo 11](http://gazebosim.org) with sensor data being published using [ROS noetic](http://wiki.ros.org/noetic/Installation)
 The car's throttle, brake, steering, and gear shifting are controlled by publishing a ROS message.
-A ROS node allows driving with a gamepad or joystick.
+A ROS node allows driving with a gamepad or joystick or keyboard.
 
 # Video + Pictures
 
@@ -12,7 +12,7 @@ A video and screenshots of the demo can be seen in this blog post: https://www.o
 
 # Requirements
 
-This demo has been tested on Ubuntu Xenial (16.04)
+This demo has been tested on Ubuntu Xenial (20.04)
 
 * An X server
 * [Docker](https://www.docker.com/get-docker)
