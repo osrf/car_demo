@@ -18,8 +18,8 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` 
     ros-noetic-gazebo-ros-pkgs \
     ros-noetic-fake-localization \
     ros-noetic-joy \
-    libignition-math4 \
-    libignition-math4-dev \
+    libignition-math6 \
+    libignition-math6-dev \
  && apt-get clean
 
 

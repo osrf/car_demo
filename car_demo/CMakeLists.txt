@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(gazebo 11 REQUIRED)
-find_package(ignition-math4 REQUIRED)
+find_package(ignition-math6 REQUIRED)
 
 catkin_package(
  # INCLUDE_DIRS include
